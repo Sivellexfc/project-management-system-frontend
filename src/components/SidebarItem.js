@@ -3,6 +3,10 @@ import { NavLink } from "react-router-dom";
 import { useSelector,useDispatch } from "react-redux";
 import { setActiveItem } from "../app/features/sidebarSlice";
 
+/**
+ * 
+ * Bu nesnenin alt seçenekleri yoktur. Tıklandığında doğrudan yönlendirir ve ilgili component render edilir.
+ */
 
 const SidebarItem = ({ icon, text, active, isCollapsed, subItems,link = [] }) => {
 

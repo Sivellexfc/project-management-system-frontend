@@ -1,6 +1,18 @@
 import React, { useState } from "react";
 
-const SidebarItemCanExpand = ({ icon, text, active, isCollapsed, subItems = [] }) => {
+
+
+/**
+ * 
+ * Bu nesne üzerine tıklandığında alt seçenekleriyle beraber gelir.
+ */
+const SidebarItemCanExpand = ({
+  icon,
+  text,
+  active,
+  isCollapsed,
+  subItems = [],
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -16,14 +28,12 @@ const SidebarItemCanExpand = ({ icon, text, active, isCollapsed, subItems = [] }
             active
               ? "bg-gradient-to-tr from-indigo-200 to-indigo-100 text-indigo-900"
               : "hover:bg-indigo-50 text-gray-600"
-          } ${
-            isCollapsed
-              ? "justify-center"
-              : ""
-          }`}
+          } ${isCollapsed ? "justify-center" : ""}`}
       >
         {icon}
-        {!isCollapsed && <span className="ml-2 text-sm font-normal">{text}</span>}
+        {!isCollapsed && (
+          <span className="ml-2 text-sm font-normal">{text}</span>
+        )}
       </li>
       {isExpanded && !isCollapsed && (
         <ul className="ml-4">

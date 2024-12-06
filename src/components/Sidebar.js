@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Logo from "../assets/logo.png";
 import SidebarItem from "./SidebarItem";
+/* ikon importları */
 import {
   BiHome,
   BiMenu,
@@ -11,19 +12,31 @@ import {
   BiHelpCircle,
   BiSolidDetail,
 } from "react-icons/bi";
+
 import { MdReport } from "react-icons/md";
 import { BsPerson } from "react-icons/bs";
 import { CgMoreVertical } from "react-icons/cg";
 import SidebarItemCanExpand from "./SidebarItemCanExpand";
 import { useSelector, useDispatch } from "react-redux";
 
+/**
+ * 
+ * Sayfanın sol kenarında bulunan bir Navigasyon barıdır.
+ * 
+ */
+
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  /**
+   * Sidebar üzerinde bulunan alt başlığa sahip olan seçenekler için bir örnek data 
+   * (burada "Gruplar" için bir örnek subItems bulunuyor)
+   */
   const subItems = [
-    {icon: <BsPerson size={20} />,text: "Üye",},
-    {icon: <BsPerson size={20} />,text: "Üye",},
-    {icon: <BsPerson size={20} />,text: "Üye",},];
+    { icon: <BsPerson size={20} />, text: "Üye" },
+    { icon: <BsPerson size={20} />, text: "Üye" },
+    { icon: <BsPerson size={20} />, text: "Üye" },
+  ];
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -87,7 +100,6 @@ const Sidebar = () => {
 
             <SidebarItemCanExpand
               icon={<BiGroup size={20} />}
-              
               text="Gruplar"
               isCollapsed={isCollapsed}
               subItems={subItems}

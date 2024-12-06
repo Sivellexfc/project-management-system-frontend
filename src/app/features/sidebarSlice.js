@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const sidebarSlice = createSlice({
   name: "sidebar",
   initialState: {
-    activeItem: "issues", // Varsayılan aktif buton
+    activeItem: "issues", // Varsayılan aktif buton 
   },
   reducers: {
     setActiveItem: (state, action) => {
