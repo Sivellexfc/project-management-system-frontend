@@ -1,17 +1,32 @@
-import { Router } from "react-router-dom";
-import "./App.css";
-import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
-import Navbar from "./components/Sidebar";
+// App.js
+import React from "react";
+import { BrowserRouter as Router, Navigate, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
 import Login from "./pages/Login";
+import Issues from "./components/Issues";
+import Reports from "./components/Reports";
+import Calender from "./components/Calender";
+import Announcement from "./components/Announcement";
+import ProjectDetails from "./components/ProjectDetails";
+import Help from "./components/Help";
 
-function App() {
+const App = () => {
   return (
-      <div className="App">
-        <Header></Header>
-        <Sidebar></Sidebar>
-      </div>
+    <Routes>
+      {/* Layout içinde gösterilecek rotalar */}
+      <Route element={<Layout />}>
+        <Route path="/" element={<Navigate to="/issues" />} />
+        <Route path="/issues" element={<Issues />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/calendar" element={<Calender />} />
+        <Route path="/announcement" element={<Announcement />} />
+        <Route path="/projectDetails" element={<ProjectDetails />} />
+        <Route path="/help" element={<Help />} />
+      </Route>
+      {/* Login rotası */}
+      <Route path="/login" element={<Login />} />
+    </Routes>
   );
-}
+};
 
 export default App;

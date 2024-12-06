@@ -12,10 +12,10 @@ const Header = () => {
       <div className="flex items-center space-x-6">
         {/* Menü */}
         <nav className="hidden md:flex space-x-4">
-          <a href="/projects" className="text-gray-700 hover:text-blue-600">
+          <a href="/sign-up" className="text-gray-700 hover:text-blue-600">
             Sign Up
           </a>
-          <a href="/settings" className="text-gray-700 hover:text-blue-600">
+          <a href="/login" className="text-gray-700 hover:text-blue-600">
             Login
           </a>
         </nav>
