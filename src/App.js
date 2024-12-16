@@ -9,6 +9,7 @@ import Calender from "./components/Calender";
 import Announcement from "./components/Announcement";
 import ProjectDetails from "./components/ProjectDetails";
 import Help from "./components/Help";
+import SubscriptionPage from "./pages/SubscriptionPage";
 
 const App = () => {
   return (
@@ -25,6 +26,8 @@ const App = () => {
       </Route>
       {/* Login rotası */}
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Login />} />
+      <Route path="/subscription" element={<SubscriptionPage />} />
     </Routes>
   );
 };
