@@ -1,27 +1,47 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "../services/AuthProvider";
+import { setAuth } from "../app/features/authSlice";
 import api from "../services/api";
 import { Navigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import Cookies from 'js-cookie';
+import axios from "axios";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { setAuth } = useAuth();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleLogin = async (event) => {
     event.preventDefault();
     try {
-      const response = await api.post("/auth/login", { email, password });
-      const { accessToken } = response.data;
-      setAuth({ accessToken });
-      alert("Giriş başarılı!");
-      navigate('/');
+      // const response = await api.post('/auth/login', { email, password });
+      const response = await axios.post(
+        `http://localhost:8085/api/v1/auth/login`,
+        { email, password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const accessToken = response.data.result.accessToken;
+      console.log(response.data)
+      console.log(accessToken)
+      Cookies.set('accessToken', accessToken);
+
+
+      console.log("get ile aldığım : ");
+      console.log(Cookies.get('accessToken'));
+      const write = Cookies.get('accessToken');
+      console.log(write)
+
+      dispatch(setAuth({ accessToken }));
+      navigate('/dashboard'); 
     } catch (error) {
-      console.error("Giriş hatası:", error);
-      alert("Giriş başarısız oldu.");
+      console.error('Giriş hatası:', error);
     }
   };
 
@@ -29,7 +49,7 @@ const Login = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
-          Welcome Back
+          GİRİŞ YAP
         </h2>
         <form>
           {/* Email Input */}
@@ -38,7 +58,7 @@ const Login = () => {
               htmlFor="email"
               className="block text-gray-700 font-medium mb-2"
             >
-              Email Address
+              Email Adres
             </label>
             <input
               value={email}
@@ -56,7 +76,7 @@ const Login = () => {
               htmlFor="password"
               className="block text-gray-700 font-medium mb-2"
             >
-              Password
+              Şifre
             </label>
             <input
               value={password}
@@ -72,18 +92,18 @@ const Login = () => {
           <button
             onClick={handleLogin}
             type="submit"
-            className="w-full bg-secondary text-primary py-2 px-4 rounded-lg hover:bg-blue-300 transition duration-200"
+            className="w-full bg-colorSecond text-primary py-2 px-4 rounded-lg hover:bg-blue-300 transition duration-200"
           >
-            Log In
+            Giriş Yap
           </button>
         </form>
 
         {/* Additional Links */}
         <div className="mt-6 text-center">
           <p className="text-gray-600">
-            Don't have an account?{" "}
-            <a href="/signup" className="text-blue-500 hover:underline">
-              Sign Up
+            Hesabınız yok mu?{" "}
+            <a href="/register" className="text-blue-500 hover:underline">
+              Kayıt Ol!
             </a>
           </p>
         </div>

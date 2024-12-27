@@ -1,65 +1,129 @@
-export type Status = 'todo' | 'in-progress' | 'done';
+export type Status = 'todo' | 'in-progress' | 'done' | 'review';
 export type Priority = 'low' | 'medium' | 'high';
 
 export type Task = {
-  title: String;
-  id: String;
-  point?: number;
+  title: string;
+  id: number;
+  points?: number;
   priority : Priority;
   status: Status;
 };
 
-export const statuses : Status[] = ['todo' , 'in-progress' , 'done'];
+export const statuses : Status[] = ['todo' , 'in-progress' , 'done','review'];
 export const priorities : Priority[] = ['low' , 'medium' , 'high'];
+
 
 export const tasks: Task[] = [
   {
-    id: "BUS-1",
+    id: 1,
     title: "Market research",
     status: "done",
     priority : 'low',
-    point: 5,
+    points: 5,
   },
   {
-    id: "BUS-2",
+    id: 2,
     title: "competitor analysis",
     status: "done",
     priority : 'medium',
-    point: 0,
+    points: 0,
   },
   {
-    id: "BUS-3",
+    id: 3,
     title: "Customer research",
     status: "in-progress",
     priority : 'medium',
-    point: 2,
+    points: 2,
   },
   {
-    id: "BUS-4",
+    id: 4,
     title: "Develop business strategy",
-    status: "done",
+    status: "review",
     priority : 'high',
-    point: 9,
+    points: 9,
   },
   {
-    id: "BUS-5",
+    id: 5,
     title: "Develop marketing plans",
     status: "todo",
     priority : 'high',
-    point: 8,
+    points: 8,
   },
   {
-    id: "BUS-6",
+    id: 6,
     title: "Implement marketing plans",
     status: "in-progress",
     priority : 'medium',
-    point: 3,
+    points: 3,
   },
   {
-    id: "BUS-7",
+    id: 7,
     title: "Evaluate business performance",
+    status: "review",
+    priority : 'high',
+    points: 3,
+  },
+  {
+    id: 8,
+    title: "Develop business strategy",
     status: "done",
     priority : 'high',
-    point: 3,
+    points: 9,
+  },
+  {
+    id: 9,
+    title: "Develop marketing plans",
+    status: "review",
+    priority : 'high',
+    points: 8,
+  },
+  {
+    id: 10,
+    title: "Implement marketing plans",
+    status: "in-progress",
+    priority : 'medium',
+    points: 3,
+  },
+  {
+    id: 11,
+    title: "Evaluate business performance",
+    status: "review",
+    priority : 'high',
+    points: 3,
+  },
+  {
+    id: 12,
+    title: "Evaluate business performance",
+    status: "review",
+    priority : 'high',
+    points: 3,
+  },
+  {
+    id: 13,
+    title: "Develop business strategy",
+    status: "done",
+    priority : 'high',
+    points: 9,
+  },
+  {
+    id: 14,
+    title: "Develop marketing plans",
+    status: "review",
+    priority : 'high',
+    points: 8,
+  },
+  {
+    id: 15,
+    title: "Implement marketing plans",
+    status: "in-progress",
+    priority : 'medium',
+    points: 3,
+  },
+  {
+    id: 16,
+    title: "Evaluate business performance",
+    status: "review",
+    priority : 'high',
+    points: 3,
   },
 ];

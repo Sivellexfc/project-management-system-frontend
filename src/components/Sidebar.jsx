@@ -18,18 +18,18 @@ import { BsPerson } from "react-icons/bs";
 import { CgMoreVertical } from "react-icons/cg";
 import SidebarItemCanExpand from "./SidebarItemCanExpand";
 import { useSelector, useDispatch } from "react-redux";
-
-/**
- * 
- * Sayfanın sol kenarında bulunan bir Navigasyon barıdır.
- * 
- */
+import Cookies from "js-cookie"
+import { jwtDecode } from "jwt-decode";
 
 const Sidebar = () => {
+  const accessToken = Cookies.get("accessToken");
+
+  console.log("token :" + JSON.stringify(accessToken, null, 2));
+  const user = jwtDecode(accessToken);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   /**
-   * Sidebar üzerinde bulunan alt başlığa sahip olan seçenekler için bir örnek data 
+   * Sidebar üzerinde bulunan alt başlığa sahip olan seçenekler için bir örnek data
    * (burada "Gruplar" için bir örnek subItems bulunuyor)
    */
   const subItems = [
@@ -75,7 +75,7 @@ const Sidebar = () => {
           <ul className="flex-1 px-3">
             <SidebarItem
               icon={<BiHome size={20} />}
-              link={"issues"}
+              link={"dashboard"}
               text="Anasayfa"
               isCollapsed={isCollapsed}
             />
@@ -145,8 +145,8 @@ const Sidebar = () => {
                 isCollapsed ? "hidden" : "block"
               }`}
             >
-              <div className="leading-4">
-                <h4>Username</h4>
+              <div className="leading-6">
+                <h4>{user.userMail}</h4>
               </div>
             </div>
             <CgMoreVertical size={20} />

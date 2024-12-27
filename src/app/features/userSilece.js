@@ -1,1 +1,0 @@
-// user Silece buraya eklenecek

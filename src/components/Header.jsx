@@ -1,6 +1,24 @@
 import React from "react";
+import { useSelector } from "react-redux";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const navigate = useNavigate();
+  //const user = useSelector((state) => state.auth.user);
+  //console.log("user : "+ user)
+  const accessToken = Cookies.get("accessToken");
+
+  console.log("token :" + JSON.stringify(accessToken, null, 2));
+  const user = jwtDecode(accessToken);
+
+  const handleLogout = () => {
+    Cookies.remove("accessToken");
+
+    navigate("/home");
+  };
+
   return (
     <header className="bg-white border-b shadow-sm px-4 py-3 flex items-center justify-between">
       {/* Sol kısım: Logo veya Proje Adı */}
@@ -13,15 +31,21 @@ const Header = () => {
         {/* Menü */}
         <nav className="hidden md:flex space-x-4">
           <a href="/sign-up" className="text-gray-700 hover:text-blue-600">
-            Sign Up
+            {user.userFirstName + " " + user.userLastName}
           </a>
-          <a href="/login" className="text-gray-700 hover:text-blue-600">
-            Login
-          </a>
+          <button
+            onClick={handleLogout}
+            className="text-gray-700 hover:text-blue-600"
+          >
+            Çıkış Yap
+          </button>
         </nav>
 
         {/* Kullanıcı Avatarı */}
         <div className="relative">
+          <div>
+            <p></p>
+          </div>
           <img
             src="https://via.placeholder.com/40"
             alt="User Avatar"
