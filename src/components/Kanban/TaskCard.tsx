@@ -3,6 +3,9 @@ import { CgDanger } from "react-icons/cg";
 import { RiArrowDownDoubleFill } from "react-icons/ri";
 import { RiArrowDownSLine } from "react-icons/ri";
 import { Task } from "./data-task";
+import KanbanCardLabel from "./KanbanCardLabel";
+import { BsMenuButton } from "react-icons/bs";
+import { IoIosMove } from "react-icons/io";
 
 const TaskCard = ({
   task,
@@ -22,14 +25,32 @@ const TaskCard = ({
       updateTask({ ...task, points: newPoints });
     }
   };
+
+  const handleDragStart = (e, task) => {
+  };
+
   return (
     <div
       draggable
+      onDrag={(e) => {
+        e.currentTarget.style.opacity = "1"; 
+      }}
       onDragStart={(e) => {
+        handleDragStart(e, task);
         e.dataTransfer.setData("id", task.id);
       }}
-      className="border rounded-lg px-2 m-2 bg-gray-50 w-[40vh] h-[100px]"
+      onDragEnd={(e) => {
+        e.currentTarget.style.opacity = "1"; 
+      }}
+      className="rounded-md p-4 m-2 bg-colorFirst"
     >
+      <div className="flex justify-between">
+          <div>
+            <KanbanCardLabel color="#27C356" text="Design"></KanbanCardLabel>
+            <KanbanCardLabel color="#2766C3" text="Plan"></KanbanCardLabel>
+          </div>
+          <IoIosMove size={20}/>
+        </div>
       <div className="text-base font-base py-2">
         {isEditingTitle ? (
           <input
@@ -44,6 +65,10 @@ const TaskCard = ({
         )}
       </div>
       <div className="flex gap-4 justify-between py-2 text-gray-500 text-sm">
+        
+        <div></div>
+        <div></div>
+
         <div className="flex gap-2">
           <div>{task.id}</div>
           {task.priority === "high" && (
@@ -62,6 +87,7 @@ const TaskCard = ({
             </div>
           )}
         </div>
+
         <div className="flex gap-2 items-center">
           <button onClick={() => updatePoints("down")}>-</button>
           <div className="font-bold">{points}</div>

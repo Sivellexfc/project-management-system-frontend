@@ -24,6 +24,7 @@ import Cookies from 'js-cookie';
 import { DashBoard } from "./components/DashBoard.jsx";
 import { Verification } from "./pages/Verification.jsx";
 import VerifyEmail from "./services/VerifyEmail.jsx";
+import KanbanBoard from "./components/Kanbanv2/KanbanBoard.tsx";
 
 const ProtectedRoute = ({ children }) => {
   const accessTokenn = useSelector((state) => state.auth.accessToken);
@@ -33,7 +34,6 @@ const ProtectedRoute = ({ children }) => {
   if (!accessToken) {
     return <Navigate to="/home" replace />;
   }
-
   return children;
 };
 
@@ -50,11 +50,9 @@ const App = () => {
           <Route path="/announcement" element={<Announcement />} />
           <Route path="/projectDetails" element={<ProjectDetails />} />
           <Route path="/help" element={<Help />} />
-          <Route path="/issues" element={<Issues />} />
+          <Route path="/issues" element={<KanbanBoard />} />
           
-
         </Route>
-        
         {/* Login rotası */}
         <Route path="/" element={<Navigate to={'/home'} />} />
         <Route path="/verification" element={<Verification/>} />

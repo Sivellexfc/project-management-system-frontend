@@ -10,13 +10,13 @@ import Header from "./Header";   // Header bileşeni
  */
 const Layout = () => {
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-[#FBFBFB]">
       {/* Sidebar */}
       <Sidebar />
       {/* Sağdaki ana içerik alanı */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <Header />
+        
         {/* Dinamik içerik alanı (Outlet) */}
         <main className="flex-1 p-4 overflow-y-auto">
           <Outlet />
