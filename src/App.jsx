@@ -25,9 +25,12 @@ import { DashBoard } from "./components/DashBoard.jsx";
 import { Verification } from "./pages/Verification.jsx";
 import VerifyEmail from "./services/VerifyEmail.jsx";
 import KanbanBoard from "./components/Kanbanv2/KanbanBoard.tsx";
+import SelectCompany from "./pages/SelectCompany.jsx";
+import CreateCompany from "./pages/CreateCompany.jsx";
 
 const ProtectedRoute = ({ children }) => {
   const accessTokenn = useSelector((state) => state.auth.accessToken);
+
   const accessToken = Cookies.get('accessToken');
   console.log("token : "+accessToken)
   
@@ -61,6 +64,8 @@ const App = () => {
         <Route path="/home" element={<HomePage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
+        <Route path="/newCompany" element={<CreateCompany />} />
+        <Route path="/selectCompant" element={<SelectCompany></SelectCompany>}></Route>
       </Routes>
     </AuthProvider>
   );

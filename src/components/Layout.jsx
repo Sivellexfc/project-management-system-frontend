@@ -18,7 +18,7 @@ const Layout = () => {
         {/* Header */}
         
         {/* Dinamik içerik alanı (Outlet) */}
-        <main className="flex-1 p-4 overflow-y-auto">
+        <main className="flex-1 p-4 flex items-center justify-center overflow-y-auto">
           <Outlet />
         </main>
       </div>

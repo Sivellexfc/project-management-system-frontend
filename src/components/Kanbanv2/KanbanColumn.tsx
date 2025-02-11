@@ -34,15 +34,12 @@ function KanbanColumn(props: Props) {
   };
 
   if (isDragging) {
-    console.log("dragginnnn")
     return (
       <div
         ref={setNodeRef}
         style={style}
         className="opacity-50 w-[350px] h-[500px] max-h-[500px] flex flex-col rounded-md items-center justify-between bg-slate-400"
-      >
-        
-      </div>
+      ></div>
     );
   }
 
@@ -58,26 +55,32 @@ function KanbanColumn(props: Props) {
     <div
       ref={setNodeRef}
       style={style}
-      className="w-[350px] h-[500px] max-h-[500px] flex flex-col rounded-md items-center justify-between bg-slate-400"
+      className="w-[350px] h-[600px] flex flex-col 
+      rounded-md items-center justify-between"
     >
-      <div {...attributes} {...listeners} className="cursor-grab bg-zinc-700">
-        <div></div>
-        {column.title}
+      <div className="w-full flex justify-start h-10 items-center">
+        <div className="w-5 h-5 bg-[#EED12B] rounded-full mr-2 shrink-0"></div>
+        <div className="w-full cursor-grab">{column.title}</div>
       </div>
-      <div className="flex flex-col flex-grow gap-4 p-2 overflow-x-auto overflow-y-hidden">
+
+      <div className="w-full border-dashed border-2 py-4 items-center flex justify-center rounded-md hover:border-[#737373] opacity-60 hover:opacity-80 cursor-pointer">
+        <button
+          className="w-full font-bold"
+          onClick={() => {
+            createTask(column.id);
+          }}
+        >
+          +
+        </button>
+      </div>
+      <div className="space-y-2 w-full flex flex-col flex-grow overflow-x-auto overflow-y-visible">
         <SortableContext items={tasksId}>
           {tasks.map((task) => (
             <TaskCard key={task.id} task={task}></TaskCard>
           ))}
         </SortableContext>
       </div>
-      <button
-        onClick={() => {
-          createTask(column.id);
-        }}
-      >
-        Add Task
-      </button>
+      
     </div>
   );
 }

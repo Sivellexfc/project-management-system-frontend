@@ -7,7 +7,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center">
       {/* Hero Section */}
-      <header className="bg-colorSecond text-white w-full py-32 text-center">
+      <header className="bg-colorFifth text-gray-200 w-full py-32 text-center">
         <h1 className="text-4xl font-bold mb-4">
           Proje Yönetim Sisteminizi Kolaylaştırın
         </h1>
@@ -17,7 +17,7 @@ const HomePage = () => {
         </p>
         <div className="space-x-4">
           <Link to={`/login`}>
-            <button className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded shadow">
+            <button className="px-6 py-2 bg-colorSecond hover:bg-blue-700 text-gray-800 font-medium rounded shadow">
               Giriş Yap
             </button>
           </Link>

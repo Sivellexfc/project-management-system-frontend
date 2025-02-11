@@ -5,10 +5,14 @@ module.exports = {
   ],
   theme: {
     fontFamily: {
-      primary: 'Poppins',
+      primary: 'Inter',
     },
     extend: {
       colors: {
+
+        borderColor : '#EEEEEE',
+        optionHoverColor: '#F4F4F4',
+
         colorFirst : '#FFFFFF',
         colorSecond : '#FBFBFB', 
         colorThird : '#F9F9F9',

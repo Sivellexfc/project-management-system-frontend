@@ -27,12 +27,12 @@ const SidebarItem = ({ icon, text, active, isCollapsed, subItems,link = [] }) =>
         to={link} className={`relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer 
           transition-colors group ${
             activeItem == link
-              ? "bg-gradient-to-tr from-indigo-200 to-indigo-100 text-indigo-900"
-              : "hover:bg-indigo-50 text-gray-600"
+              ? "bg-optionHoverColor"
+              : "hover:bg-optionHoverColor text-gray-600"
           } ${isCollapsed ? "justify-center" : ""}`}>
           {icon}
           {!isCollapsed && (
-            <span className="ml-2 text-sm font-normal">{text}</span>
+            <span className="ml-2 text-base font-normal">{text}</span>
           )}
         </NavLink>
       </li>

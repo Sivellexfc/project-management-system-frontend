@@ -9,11 +9,16 @@ const Register = () => {
   const [password, setpassword] = useState("");
   const [phone, setphone] = useState("");
   const [photo, setphoto] = useState("https://example.com/profiles/ahmet.jpg");
-  const [roleName, setroleName] = useState("COMPANY_OWNER");
+  const [roleName, setSelectedRoleName] = useState("");
 
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  const handleChange = (event) => {
+    setSelectedRoleName(event.target.value);
+    
+  };
 
   const handleSubmit = async (e) => {
     const registerData = {
@@ -37,7 +42,7 @@ const Register = () => {
       setErrorMessage("Parola en az 8 karakter olmalıdır.");
       return;
     }
-
+    
     try {
       const response = await axios.post(
         `http://localhost:8085/api/v1/auth/register`,
@@ -48,7 +53,7 @@ const Register = () => {
           },
         }
       );
-      if(response.data.isSuccess){
+      if (response.data.isSuccess) {
         window.location.href = "/verification";
       }
       console.log("response register : " + response.data.isSuccess);
@@ -83,7 +88,7 @@ const Register = () => {
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-10 bg-white p-6 mb-[100px] mt-[100px] rounded-lg shadow-md">
+    <div className="max-w-lg mx-auto bg-white p-6 mb-[100px] mt-[100px] rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6 text-gray-700">KAYIT OL</h2>
       <form onSubmit={handleSubmit} encType="multipart/form-data">
         <div className="mb-4">
@@ -117,6 +122,16 @@ const Register = () => {
             required
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700">Type</label>
+          <select id="options" value={roleName} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Seçiniz...</option>
+            <option value="COMPANY_OWNER">Kurumsal</option>
+            <option value="USER">Bireysel Kullanıcı</option>
+            <option value="ADMIN">Admin</option>
+          </select>
         </div>
 
         <div className="mb-4">

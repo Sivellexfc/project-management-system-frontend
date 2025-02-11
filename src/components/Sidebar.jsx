@@ -13,20 +13,27 @@ import {
   BiSolidDetail,
 } from "react-icons/bi";
 
-import { MdReport } from "react-icons/md";
+import { MdReport, MdSettings } from "react-icons/md";
 import { BsPerson } from "react-icons/bs";
 import { CgMoreVertical } from "react-icons/cg";
 import SidebarItemCanExpand from "./SidebarItemCanExpand";
 import { useSelector, useDispatch } from "react-redux";
-import Cookies from "js-cookie"
+import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
+import { IoSettingsOutline } from "react-icons/io5";
+import { SettingsMenu } from "./SettingsMenu";
+
 const Sidebar = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const accessToken = Cookies.get("accessToken");
 
-  console.log("token :" + JSON.stringify(accessToken, null, 2));
+  // Menü dışına tıklandığında menüyü kapat
+
   const user = jwtDecode(accessToken);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const selectedCompany = JSON.parse(localStorage.getItem("selectedCompany") || "{}");
 
   /**
    * Sidebar üzerinde bulunan alt başlığa sahip olan seçenekler için bir örnek data
@@ -50,7 +57,7 @@ const Sidebar = () => {
         } transition-all duration-300`}
       >
         <nav
-          className="h-full flex flex-col bg-white border-r shadow-sm"
+          className="h-full flex flex-col bg-white border-[#EEEEEE] border-r shadow-sm"
           style={{ userSelect: "none" }}
         >
           {/* Logo ve Menü İkonu */}
@@ -58,16 +65,16 @@ const Sidebar = () => {
             className={`${
               isCollapsed
                 ? "p-4 pb-2 flex justify-center"
-                : "p-4 pb-2 flex justify-between"
+                : "p-4 pb-2 flex justify-end"
             }`}
           >
-            <img
+            {/* <img
               src={Logo}
               className={`w-12 ${isCollapsed ? "hidden" : "block"}`}
               alt="Logo"
-            />
+            /> */}
             <button onClick={toggleSidebar}>
-              <BiMenu size={20} />
+              <BiMenu size={30} />
             </button>
           </div>
 
@@ -123,7 +130,7 @@ const Sidebar = () => {
               text="Yardım"
               isCollapsed={isCollapsed}
             />
-            <hr className="my-3" />
+            <hr className=" border-borderColor" />
             <SidebarItem
               icon={<BsPerson size={20} />}
               text="Müşteri Bilgileri"
@@ -132,7 +139,7 @@ const Sidebar = () => {
           </ul>
 
           {/* Kullanıcı Bilgileri */}
-          <div className="border-t flex items-center p-3">
+          <div className="border-t border-borderColor flex items-center p-3">
             <img
               src={Logo}
               className={`w-10 h-10 rounded-md ${
@@ -145,11 +152,20 @@ const Sidebar = () => {
                 isCollapsed ? "hidden" : "block"
               }`}
             >
-              <div className="leading-6">
-                <h4>{user.userMail}</h4>
+              <div className="leading-6 py-2 px-2">
+                <div className="flex text-sm">
+                  
+                <p>{selectedCompany.name || "Şirket Seçilmedi"}</p>
+
+                  <p>{user.userFirstName} </p>
+                  <p>{user.userLastName}</p>
+                </div>
+                <h4 className="text-[#737373] text-sm">{user.userMail}</h4>
               </div>
             </div>
-            <CgMoreVertical size={20} />
+            
+              <SettingsMenu></SettingsMenu>
+            
           </div>
         </nav>
       </aside>
