@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
   // Kullanıcı bilgilerini almak için hook ekleyebilirsin (jwtDecode kullanarak)
   const getUserFromToken = () => {
     if (!accessToken) return null;
-
+    
     try {
       const user = jwtDecode(accessToken); // Token'dan kullanıcıyı çıkart
       return user;

@@ -22,7 +22,7 @@ const Layout = () => {
         {/* Header */}
 
         {/* Dinamik içerik alanı (Outlet) */}
-        <main className="flex-1 p-10 flex items-center justify-center overflow-y-auto">
+        <main className="flex-1 p-10 flex place-items-stretch justify-center overflow-y-auto">
           <Outlet />
         </main>
       </div>

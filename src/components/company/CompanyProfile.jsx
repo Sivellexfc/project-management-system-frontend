@@ -8,6 +8,7 @@ const CompanyProfile = () => {
     const getData = async () => {
       try {
         const result = await fetchData("3"); // "users" endpoint'ini çağır
+        console.log("veri tekrar çekildi başarılı : ")
         setData(result);
       } catch (error) {
         console.error("Veri çekme başarısız:", error);
@@ -19,7 +20,7 @@ const CompanyProfile = () => {
 
   return (
     <div className="h-full w-full">
-      <h1 className="text-3xl py-4 font-primary">Profile</h1>
+      <h1 className="text-2xl my-5 font-primary font-medium">Profile</h1>
       
       {data ? (
           <div className="flex flex-col border bg-colorFirst border-borderColor md:flex-row gap-6 p-4">
