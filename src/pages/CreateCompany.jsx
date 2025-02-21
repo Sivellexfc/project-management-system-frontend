@@ -40,9 +40,6 @@ const CreateCompany = () => {
     };
 
     const accessToken = Cookies.get('accessToken');
-    console.log(accessToken)
-
-    console.log("Oluşturulan adres:", addressAll);
 
     try {
       const response = await axios.post(

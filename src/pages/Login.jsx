@@ -15,6 +15,7 @@ const Login = () => {
   const dispatch = useDispatch();
 
   const handleLogin = async (event) => {
+    
     event.preventDefault();
     try {
       // const response = await api.post('/auth/login', { email, password });
@@ -28,21 +29,17 @@ const Login = () => {
         }
       );
       const accessToken = response.data.result.accessToken;
-      console.log(response.data)
-      console.log(accessToken)
+
       Cookies.set('accessToken', accessToken);
-
-
-      console.log("get ile aldığım : ");
-      console.log(Cookies.get('accessToken'));
-      const write = Cookies.get('accessToken');
-      console.log(write)
+      
 
       dispatch(setAuth({ accessToken }));
-      navigate('/dashboard'); 
+      navigate('/selectCompany');
     } catch (error) {
       console.error('Giriş hatası:', error);
     }
+
+
   };
 
   return (

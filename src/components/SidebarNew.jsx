@@ -23,16 +23,18 @@ import { jwtDecode } from "jwt-decode";
 
 import { IoSettingsOutline } from "react-icons/io5";
 import { SettingsMenu } from "./SettingsMenu";
-import {useAuth} from "../Context/AuthContext"
+import { useAuth } from "../Context/AuthContext";
+import { Link } from "react-router-dom";
+import Sidebar from "./Sidebar";
 
-const Sidebar = () => {
-
+const SidebarNew = () => {
   const { user } = useAuth();
-  console.log(user)
+  console.log(user);
+
   const menuItems = [
     {
       name: "Takvim",
-      path: "/calender",
+      path: "/calendar",
       roles: ["USER", "ADMIN", "COMPANY_OWNER"],
     },
     {
@@ -55,30 +57,27 @@ const Sidebar = () => {
       path: "/help",
       roles: ["USER", "ADMIN", "COMPANY_OWNER"],
     },
-    { name: "Şirket", path: "/company", roles: ["COMPANY_OWNER"] }, // Sadece COMPANY_OWNER görecek
+    { name: "Şirket", path: "/company", roles: ["COMPANY_OWNER","ADMIN"] }, // Sadece COMPANY_OWNER görecek
     { name: "Admin Panel", path: "/admin", roles: ["ADMIN"] }, // Sadece ADMIN görecek
   ];
 
-  const [isOpen, setIsOpen] = useState(false);
   const accessToken = Cookies.get("accessToken");
+  const userinfos = jwtDecode(accessToken);
 
-  //const user = jwtDecode(accessToken);
-  
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const selectedCompany = JSON.parse(
     localStorage.getItem("selectedCompany") || "{}"
   );
 
-  const subItems = [
-    { icon: <BsPerson size={20} />, text: "Üye" },
-    { icon: <BsPerson size={20} />, text: "Üye" },
-    { icon: <BsPerson size={20} />, text: "Üye" },
-  ];
-
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  const filteredMenu = menuItems.filter((item) =>
+    item.roles.includes(userinfos.userRole)
+  );
+  
 
   return (
     <div className="flex z-50">
@@ -99,7 +98,6 @@ const Sidebar = () => {
                 : "p-4 pb-2 flex justify-end"
             }`}
           >
-            
             <button onClick={toggleSidebar}>
               <BiMenu size={30} />
             </button>
@@ -107,62 +105,11 @@ const Sidebar = () => {
 
           {/* Menü Seçenekleri */}
           <ul className="flex-1 px-3">
-            <SidebarItem
-              icon={<BiHome size={20} />}
-              link={"dashboard"}
-              text="Anasayfa"
-              isCollapsed={isCollapsed}
-            />
-            <SidebarItem
-              icon={<BiCalendar size={20} />}
-              link={"calendar"}
-              text="Takvim"
-              isCollapsed={isCollapsed}
-            />
-            <SidebarItem
-              icon={<BiPencil size={20} />}
-              link={"issues"}
-              text="Yapılacaklar"
-              isCollapsed={isCollapsed}
-            />
-            <SidebarItem
-              icon={<BiMailSend size={20} />}
-              link={"announcement"}
-              text="Duyurular"
-              isCollapsed={isCollapsed}
-            />
+            {filteredMenu.map((item) => (
+              <SidebarItem text={item.name} link={item.path} isCollapsed={isCollapsed}>
 
-            <SidebarItemCanExpand
-              icon={<BiGroup size={20} />}
-              text="Gruplar"
-              isCollapsed={isCollapsed}
-              subItems={subItems}
-            />
-
-            <SidebarItem
-              icon={<MdReport size={20} />}
-              link={"reports"}
-              text="Raporlar"
-              isCollapsed={isCollapsed}
-            />
-            <SidebarItem
-              icon={<BiSolidDetail size={20} />}
-              link={"projectDetails"}
-              text="Proje Detayları"
-              isCollapsed={isCollapsed}
-            />
-            <SidebarItem
-              icon={<BiHelpCircle size={20} />}
-              link={"help"}
-              text="Yardım"
-              isCollapsed={isCollapsed}
-            />
-            <hr className=" border-borderColor" />
-            <SidebarItem
-              icon={<BsPerson size={20} />}
-              text="Müşteri Bilgileri"
-              isCollapsed={isCollapsed}
-            />
+              </SidebarItem>
+            ))}
           </ul>
 
           {/* Kullanıcı Bilgileri */}
@@ -182,7 +129,6 @@ const Sidebar = () => {
               <div className="leading-6 py-2 px-2">
                 <div className="flex text-sm">
                   {/* <p>{selectedCompany.name || "Şirket Seçilmedi"}</p>
-
                   <p>{user.userFirstName} </p>
                   <p>{user.userLastName}</p> */}
                 </div>
@@ -197,4 +143,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default SidebarNew;

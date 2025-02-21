@@ -27,6 +27,7 @@ import VerifyEmail from "./services/VerifyEmail.jsx";
 import KanbanBoard from "./components/Kanbanv2/KanbanBoard.tsx";
 import SelectCompany from "./pages/SelectCompany.jsx";
 import CreateCompany from "./pages/CreateCompany.jsx";
+import CompanySettings from "./components/company/CompanySettings.jsx";
 
 const ProtectedRoute = ({ children }) => {
   const accessTokenn = useSelector((state) => state.auth.accessToken);
@@ -52,6 +53,7 @@ const App = () => {
           <Route path="/calendar" element={<Calender />} />
           <Route path="/announcement" element={<Announcement />} />
           <Route path="/projectDetails" element={<ProjectDetails />} />
+          <Route path="/company" element={<CompanySettings />} />
           <Route path="/help" element={<Help />} />
           <Route path="/issues" element={<KanbanBoard />} />
           
@@ -65,7 +67,7 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/newCompany" element={<CreateCompany />} />
-        <Route path="/selectCompant" element={<SelectCompany></SelectCompany>}></Route>
+        <Route path="/selectCompany" element={<SelectCompany></SelectCompany>}></Route>
       </Routes>
     </AuthProvider>
   );
