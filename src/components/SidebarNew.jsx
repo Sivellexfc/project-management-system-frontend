@@ -26,6 +26,7 @@ import { SettingsMenu } from "./SettingsMenu";
 import { useAuth } from "../Context/AuthContext";
 import { Link } from "react-router-dom";
 import Sidebar from "./Sidebar";
+import { FaCalendarAlt, FaTasks, FaBullhorn, FaChartBar, FaQuestionCircle, FaBuilding, FaUserShield } from "react-icons/fa";
 
 const SidebarNew = () => {
   const { user } = useAuth();
@@ -36,29 +37,34 @@ const SidebarNew = () => {
       name: "Takvim",
       path: "/calendar",
       roles: ["USER", "ADMIN", "COMPANY_OWNER"],
+      icon: <FaCalendarAlt />,
     },
     {
       name: "Yapılacaklar",
       path: "/issues",
       roles: ["USER", "ADMIN", "COMPANY_OWNER"],
+      icon: <FaTasks />,
     },
     {
       name: "Duyurular",
       path: "/announcement",
       roles: ["USER", "ADMIN", "COMPANY_OWNER"],
+      icon: <FaBullhorn />,
     },
     {
       name: "Raporlar",
       path: "/reports",
       roles: ["USER", "ADMIN", "COMPANY_OWNER"],
+      icon: <FaChartBar />,
     },
     {
       name: "Yardım",
       path: "/help",
       roles: ["USER", "ADMIN", "COMPANY_OWNER"],
+      icon: <FaQuestionCircle />,
     },
-    { name: "Şirket", path: "/company", roles: ["COMPANY_OWNER","ADMIN"] }, // Sadece COMPANY_OWNER görecek
-    { name: "Admin Panel", path: "/admin", roles: ["ADMIN"] }, // Sadece ADMIN görecek
+    { name: "Şirket", path: "/company", roles: ["COMPANY_OWNER","ADMIN"],icon: <FaBuilding />, }, // Sadece COMPANY_OWNER görecek
+    { name: "Admin Panel", path: "/admin", roles: ["ADMIN"],icon: <FaUserShield />, }, // Sadece ADMIN görecek
   ];
 
   const accessToken = Cookies.get("accessToken");
@@ -106,7 +112,7 @@ const SidebarNew = () => {
           {/* Menü Seçenekleri */}
           <ul className="flex-1 px-3">
             {filteredMenu.map((item) => (
-              <SidebarItem text={item.name} link={item.path} isCollapsed={isCollapsed}>
+              <SidebarItem text={item.name} icon={item.icon} link={item.path} isCollapsed={isCollapsed}>
 
               </SidebarItem>
             ))}

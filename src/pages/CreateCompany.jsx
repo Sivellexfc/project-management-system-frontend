@@ -63,7 +63,7 @@ const CreateCompany = () => {
       );
       
       if (response.data.isSuccess) {
-        window.location.href = "/verification";
+        window.location.href = "/dashboard";
       }
       console.log("response register : " + response.data.isSuccess);
     } catch (error) {

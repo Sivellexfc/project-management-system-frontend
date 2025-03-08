@@ -6,6 +6,7 @@ import ProfjectSettings from "./ProjectSettings";
 import CompanyEmployees from "./CompanyEmployees";
 import GroupsPage from "./GroupsPage";
 import SubGroupsPage from "./SubGroupsPage";
+import CompanyUsersListCard from "./CompanyUsersListCard";
 
 const CompanySettings = () => {
   const [selectedComponent, setSelectedComponent] = useState("profile");
@@ -36,7 +37,8 @@ const CompanySettings = () => {
 
   return (
     <div className="w-full flex flex-col">
-      <h1 className="font-primary text-3xl font-medium pb-10">Şirket ayarları</h1>
+      <h1 className="font-primary text-3xl font-medium ">Şirket ayarları</h1>
+      {/* <h2 className="font-md text-xl pb-10">{selectedComponent}</h2> */}
       <Header setSelectedComponent={setSelectedComponent} ></Header>
       <div className="">{renderComponent()}</div>
     </div>

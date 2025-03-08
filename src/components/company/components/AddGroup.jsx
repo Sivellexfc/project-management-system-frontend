@@ -1,28 +1,22 @@
 import React from "react";
+import { useState } from "react";
+import Cookies from 'js-cookie';
+import axios from "axios";
+import { postData } from "../../../services/groupServices/PostNewGroup";
+
 
 const AddGroup = ({ closeModal }) => {
   const [title, setTitle] = useState(""); // Başlık input değeri için state
+  const selectedCompanyId = Cookies.get("selectedCompanyId")
 
   // Form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault(); // Formun sayfayı yenilemesini engeller
-
-    // Form verilerini hazırlayın
-    const formData = {
-      title,
-    };
-
     try {
       // POST isteği
-      const response = await fetch("https://your-api-endpoint.com/groups", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
+      const response = await postData(title,selectedCompanyId);
+      console.log(response)
+      if (response.isSuccess) {
         // Başarı durumu
         alert("Grup başarıyla eklendi!");
         closeModal(); // Modal'ı kapat
@@ -45,6 +39,8 @@ const AddGroup = ({ closeModal }) => {
             <label className="block mb-2">Başlık</label>
             <input
               type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md"
             />
           </div>

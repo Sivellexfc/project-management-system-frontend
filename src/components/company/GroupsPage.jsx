@@ -9,9 +9,9 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import Button from "@mui/material/Button";
 import { useEffect } from "react";
-import { fetchData } from "../../services/companyServices/GetCompanyEmployees";
 import { useState } from "react";
 import AddGroup from "./components/AddGroup";
+import { fetchData } from "../../services/groupServices/GetCompanyGroups";
 
 const columns = [
   { id: "name", label: "Name", minWidth: 170 },
@@ -36,6 +36,8 @@ export default function GroupsPage() {
     const getData = async () => {
       try {
         const result = await fetchData("3"); // Backend'den veri çekme
+        console.log(result)
+        console.log("data : ",data)
         setData(result);
       } catch (error) {
         console.error("Veri çekme başarısız:", error);

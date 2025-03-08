@@ -20,7 +20,7 @@ import { AuthProvider } from "./services/AuthProvider";
 import { useAuth } from "./services/AuthProvider";
 import HomePage from "./pages/HomePage.jsx";
 import { useSelector } from "react-redux";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 import { DashBoard } from "./components/DashBoard.jsx";
 import { Verification } from "./pages/Verification.jsx";
 import VerifyEmail from "./services/VerifyEmail.jsx";
@@ -28,48 +28,106 @@ import KanbanBoard from "./components/Kanbanv2/KanbanBoard.tsx";
 import SelectCompany from "./pages/SelectCompany.jsx";
 import CreateCompany from "./pages/CreateCompany.jsx";
 import CompanySettings from "./components/company/CompanySettings.jsx";
+import InvitedUserPage from "./pages/InviteRedirect.jsx";
+import { createTheme, ThemeProvider } from "@mui/material";
+import UserAddCompanyDirection from "./pages/UserAddCompanyDirection.jsx";
 
 const ProtectedRoute = ({ children }) => {
   const accessTokenn = useSelector((state) => state.auth.accessToken);
 
-  const accessToken = Cookies.get('accessToken');
-  console.log("token : "+accessToken)
-  
+  const accessToken = Cookies.get("accessToken");
+  console.log("token : " + accessToken);
+
   if (!accessToken) {
     return <Navigate to="/home" replace />;
   }
   return children;
 };
 
+const RestrictWhenLoggenInRoutes = ({ children }) => {
+  const accessTokenn = useSelector((state) => state.auth.accessToken);
+
+  const accessToken = Cookies.get("accessToken");
+  console.log("token : " + accessToken);
+
+  if (accessToken) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+};
+
 const App = () => {
-  const accessToken = Cookies.get('accessToken');
+  const theme = createTheme({
+    typography: {
+      fontFamily: [
+        'Inter'
+      ].join(','),
+    },});
+  
   return (
-    <AuthProvider>
-      <Routes>
-        {/* Layout içinde gösterilecek rotalar */}
-        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route path="/dashboard" element={<DashBoard/>} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/calendar" element={<Calender />} />
-          <Route path="/announcement" element={<Announcement />} />
-          <Route path="/projectDetails" element={<ProjectDetails />} />
-          <Route path="/company" element={<CompanySettings />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="/issues" element={<KanbanBoard />} />
-          
-        </Route>
-        {/* Login rotası */}
-        <Route path="/" element={<Navigate to={'/home'} />} />
-        <Route path="/verification" element={<Verification/>} />
-        <Route path="/auth/verify" element={<VerifyEmail />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/subscription" element={<SubscriptionPage />} />
-        <Route path="/newCompany" element={<CreateCompany />} />
-        <Route path="/selectCompany" element={<SelectCompany></SelectCompany>}></Route>
-      </Routes>
-    </AuthProvider>
+    <ThemeProvider theme={theme}>
+      <AuthProvider>
+        <Routes>
+          {/* Layout içinde gösterilecek rotalar */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/dashboard" element={<DashBoard />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/calendar" element={<Calender />} />
+            <Route path="/announcement" element={<Announcement />} />
+            <Route path="/projectDetails" element={<ProjectDetails />} />
+            <Route path="/company" element={<CompanySettings />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/issues" element={<KanbanBoard />} />
+          </Route>
+
+
+          {/* Login rotası */}
+          <Route path="/" element={<Navigate to={"/home"} />} />
+          <Route path="/verification" element={
+              <RestrictWhenLoggenInRoutes>
+                <Login />
+              </RestrictWhenLoggenInRoutes>
+            } />
+          <Route path="/auth/verify" element={<VerifyEmail />} />
+          <Route path="/invite" element={<InvitedUserPage />} />
+          <Route
+            path="/login"
+            element={
+              <RestrictWhenLoggenInRoutes>
+                <Login />
+              </RestrictWhenLoggenInRoutes>
+            }
+          />
+          <Route path="/userAddToCompany" element={<UserAddCompanyDirection></UserAddCompanyDirection>}></Route>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/register" element={
+              <RestrictWhenLoggenInRoutes>
+                <Login />
+              </RestrictWhenLoggenInRoutes>
+            } />
+          <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/newCompany" element={
+              <RestrictWhenLoggenInRoutes>
+                <Login />
+              </RestrictWhenLoggenInRoutes>
+            } />
+          <Route
+            path="/selectCompany"
+            element={
+              <RestrictWhenLoggenInRoutes>
+                <Login />
+              </RestrictWhenLoggenInRoutes>
+            }
+          ></Route>
+        </Routes>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

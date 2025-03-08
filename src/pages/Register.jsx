@@ -1,9 +1,36 @@
 import React, { useState } from "react";
 import api from "../services/api";
 import axios from "axios";
+import { useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
+import { addUserToCompany } from "../services/companyServices/AddUserToCompany";
+import { jwtDecode } from "jwt-decode";
 
 const Register = () => {
-  const [email, setemail] = useState("");
+  const [searchParams] = useSearchParams();
+  const [email, setEmail] = useState("");
+  const [companyId, setCompanyId] = useState("");
+
+  const [invitedUser, setInvitedUser] = useState(false);
+  const [key, setKey] = useState("");
+
+  useEffect(() => {
+    const tokenParam = searchParams.get("token")?.trim(); // URL'den token al
+    if (tokenParam) {
+      setKey(tokenParam); // Token'ı state'e kaydet
+      try {
+        const decoded = jwtDecode(tokenParam); // Token'ı decode et
+        if (decoded.userMail) {
+          setInvitedUser(true);
+          console.log(decoded.userMail);
+          setEmail(decoded.userMail); // Eğer userMail varsa email state'ine ata
+        }
+      } catch (error) {
+        console.error("Token decode edilirken hata oluştu:", error);
+      }
+    }
+  }, [searchParams]);
+  console.log(invitedUser)
   const [firstName, setfirstName] = useState("");
   const [lastName, setlastName] = useState("");
   const [password, setpassword] = useState("");
@@ -17,20 +44,9 @@ const Register = () => {
 
   const handleChange = (event) => {
     setSelectedRoleName(event.target.value);
-    
   };
 
   const handleSubmit = async (e) => {
-    const registerData = {
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      password: password,
-      phone: phone,
-      photo: photo,
-      roleName: roleName,
-    };
-
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -42,7 +58,7 @@ const Register = () => {
       setErrorMessage("Parola en az 8 karakter olmalıdır.");
       return;
     }
-    
+
     try {
       const response = await axios.post(
         `http://localhost:8085/api/v1/auth/register`,
@@ -53,10 +69,14 @@ const Register = () => {
           },
         }
       );
-      if (response.data.isSuccess) {
+      console.log("Key Değeri:", key);
+      if (response.data.isSuccess && key) {
+        console.log("Key bulundu, userAddToCompany sayfasına yönlendiriliyor.");
+        window.location.href = `/userAddToCompany?token=${key}`;
+      } else if (response.data.isSuccess && !key) {
+        console.log("Key bulunamadı, verification sayfasına yönlendiriliyor.");
         window.location.href = "/verification";
       }
-      console.log("response register : " + response.data.isSuccess);
     } catch (error) {
       console.error("Bir hata oluştu:", error);
     }
@@ -113,12 +133,13 @@ const Register = () => {
           />
         </div>
 
-        <div className="mb-4">
+        <div className="mb-4 select-none">
           <label className="block text-gray-700">E-mail</label>
           <input
+            disabled={invitedUser && email}
             type="email"
             value={email}
-            onChange={(e) => setemail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             required
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -126,7 +147,12 @@ const Register = () => {
 
         <div className="mb-4">
           <label className="block text-gray-700">Type</label>
-          <select id="options" value={roleName} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <select
+            id="options"
+            value={roleName}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
             <option value="">Seçiniz...</option>
             <option value="COMPANY_OWNER">Kurumsal</option>
             <option value="USER">Bireysel Kullanıcı</option>
