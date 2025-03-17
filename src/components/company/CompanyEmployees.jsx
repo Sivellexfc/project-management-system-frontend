@@ -12,6 +12,10 @@ import { useEffect, useState } from "react";
 import AddEmployee from "./components/InviteUser";
 import { fetchData } from "../../services/companyServices/GetCompanyEmployees";
 import KanbanCardLabel from "../Kanban/KanbanCardLabel";
+import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { BiTrash } from "react-icons/bi";
+import { alignProperty } from "@mui/material/styles/cssUtils";
+import RemoveUser from "./components/RemoveUser";
 
 const columns = [
   { id: "avatar", label: "Avatar", minWidth: 100 },
@@ -20,24 +24,14 @@ const columns = [
   { id: "startDate", label: "Start Date", minWidth: 170 },
   { id: "group", label: "Group", minWidth: 170 },
   { id: "subgroup", label: "Sub-group", minWidth: 170 },
-  { id: "action", label: "Actions", minWidth: 170 },
+  { id: "action", label: "Actions", minWidth: 170, align:"center" },
 ];
 
-const datas = [
-  {
-    avatar:
-      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    name: "Musluhan Çavuş",
-    startDate: "09-10-2025",
-    group: "Developer",
-    subgroup: "Frontend Developer",
-    action: "Düzenle",
-  },
-];
 
 export default function CompanyEmployees() {
 
   const [datas, setDatas] = React.useState("");
+  const [selectedUserId, setSelectedUserId] = React.useState("");
 
   useEffect(() => {
       const getData = async () => {
@@ -58,11 +52,20 @@ export default function CompanyEmployees() {
     }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRemoveMemberModalOpen, setIsRemoveMemberModalOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const openRemoveMemberModal = () => setIsRemoveMemberModalOpen(true);
+  const closeRemoveMemberModal = () => setIsRemoveMemberModalOpen(false);
+
+  const handleRemoveMember = (userId) => {
+    setSelectedUserId(userId);
+    openRemoveMemberModal();
+  }
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -79,7 +82,7 @@ export default function CompanyEmployees() {
 
   return (
     <div>
-      <h1 className="text-2xl font-primary font-medium my-5">Üyeler</h1>
+      {/* <h1 className="text-2xl font-primary font-medium my-5">Üyeler</h1> */}
       <div className="flex justify-end">
         <button
           onClick={openModal}
@@ -89,7 +92,7 @@ export default function CompanyEmployees() {
         </button>
         {isModalOpen && <AddEmployee closeModal={closeModal} />}
       </div>
-      <Paper sx={{ width: "100%", overflow: "hidden" }}>
+      <Paper sx={{ width: "100%", overflow: "hidden",border: "1px solid #EEEEEE" }} elevation={0}>
         <TableContainer sx={{ maxHeight: 700 }}>
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
@@ -98,27 +101,73 @@ export default function CompanyEmployees() {
                   <TableCell
                     key={column.id}
                     style={{ minWidth: column.minWidth }}
+                    align="center"
                   >
                     {column.label}
                   </TableCell>
                 ))}
               </TableRow>
             </TableHead>
-            <TableBody>
+            <TableBody sx={{border: "1px solid #EEEEEE"}}>
               {datas.length > 0 ? (
                 datas
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => (
                     <TableRow hover role="checkbox" tabIndex={-1} key={index}>
                       {columns.map((column) => (
-                        <TableCell key={column.id}>
+                        <TableCell key={column.id} align={column.align}>
                           {column.id === "action" ? (
+                            <div className="space-x-2 flex justify-center">
+                            {/* Düzenle Butonu */}
                             <Button
                               onClick={() => handleEditClick(row)}
                               variant="outlined"
+                              sx={{
+                                font:"light",
+                                minWidth: "auto",
+                                height: "28px",
+                                padding: "2px 8px",
+                                fontSize: "0.8rem",
+                                borderColor: "#eeeeee",
+                                color: "gray",
+                                "&:hover": {
+                                  borderColor: "darkgray",
+                                  color: "darkgray",
+                                },
+                              }}
                             >
-                              {row.action}
+                              Düzenle
                             </Button>
+
+                            {/* Çöp Kutusu Butonu */}
+                            <Button
+                              onClick={() => {handleRemoveMember(row.id)}}
+                              variant="text" // Border'ı kaldır
+                              sx={{
+                                minWidth: "auto",
+                                height: "28px",
+                                padding: "2px 8px",
+                                color: "black", // Rengi siyah yap
+                                border: "none", // Border tamamen kaldırıldı
+                              }}
+                            >
+                              <BiTrash size={22} />
+                            </Button>
+
+
+
+                            {/* Ok Butonu */}
+                            <Button
+                              onClick={() => handleRemoveMember(row.id)}
+                              className="ml-100 h-7 text-black"
+                            >
+                              <MdOutlineKeyboardArrowDown
+                                className="w-6 h-6"
+                                style={{ color: "black" }}
+                              />
+                            </Button>
+                            
+                          </div>
                           ) : column.id === "avatar" ? (
                             <img
                               src={row.avatar}
@@ -159,6 +208,7 @@ export default function CompanyEmployees() {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+      {isRemoveMemberModalOpen && <RemoveUser userId={selectedUserId} closeRemoveMemberModal={closeRemoveMemberModal}></RemoveUser>}
     </div>
   );
 }

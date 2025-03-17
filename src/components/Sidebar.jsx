@@ -22,6 +22,8 @@ import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
 import { IoSettingsOutline } from "react-icons/io5";
+import { PiProjectorScreenChartLight } from "react-icons/pi";
+
 import { SettingsMenu } from "./SettingsMenu";
 import {useAuth} from "../Context/AuthContext"
 
@@ -29,6 +31,7 @@ const Sidebar = () => {
 
   const { user } = useAuth();
   console.log(user)
+  
   const menuItems = [
     {
       name: "Takvim",
@@ -53,6 +56,11 @@ const Sidebar = () => {
     {
       name: "Yardım",
       path: "/help",
+      roles: ["USER", "ADMIN", "COMPANY_OWNER"],
+    },
+    {
+      name: "Projeler",
+      path: "/projects",
       roles: ["USER", "ADMIN", "COMPANY_OWNER"],
     },
     { name: "Şirket", path: "/company", roles: ["COMPANY_OWNER"] }, // Sadece COMPANY_OWNER görecek
@@ -129,6 +137,12 @@ const Sidebar = () => {
               icon={<BiMailSend size={20} />}
               link={"announcement"}
               text="Duyurular"
+              isCollapsed={isCollapsed}
+            />
+            <SidebarItem
+              icon={<PiProjectorScreenChartLight size={20} />}
+              link={"projects"}
+              text="Projeler"
               isCollapsed={isCollapsed}
             />
 

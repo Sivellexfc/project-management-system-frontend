@@ -10,12 +10,13 @@ import TableRow from "@mui/material/TableRow";
 import Button from "@mui/material/Button";
 import { useEffect } from "react";
 import { fetchData } from "../../services/companyServices/GetCompanyEmployees";
+import { getSubGroups } from "../../services/groupServices/GetSubGroups";
+import CreateSubGroupModal from "./components/CreateSubGroupModal";
+import { useState } from "react";
+
 
 const columns = [
   { id: "name", label: "Name", minWidth: 170 },
-  { id: "startDate", label: "Start Date", minWidth: 170 },
-  { id: "group", label: "Group", minWidth: 170 },
-  { id: "subgroup", label: "Sub-group", minWidth: 170 },
   { id: "action", label: "Actions", minWidth: 170 },
 ];
 
@@ -23,21 +24,28 @@ function createData(name, startDate, group, subgroup, action) {
   return { name, startDate, group, subgroup, action };
 }
 
-export default function SubGroupsPage() {
+export default function SubGroupsPage({ groupId }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
   const [data, setData] = React.useState(null);
 
   useEffect(() => {
     const getData = async () => {
       try {
-        const result = await fetchData("3"); // Backend'den veri çekme
+        console.log(groupId)
+        const result = await getSubGroups("3",groupId); // Backend'den veri çekme
         setData(result);
       } catch (error) {
         console.error("Veri çekme başarısız:", error);
       }
+      console.log("alt gruplar: ",data)
     };
 
     getData();
-  }, []);
+  }, [groupId]);
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -45,6 +53,10 @@ export default function SubGroupsPage() {
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
+
+  const handleCreateSubGroup = () => {
+    openModal();
+  }
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(+event.target.value);
@@ -71,13 +83,14 @@ export default function SubGroupsPage() {
       : [];
 
   return (
-    <div>
-      <h1 className="text-2xl font-primary font-medium my-5">Alt-gruplar</h1>
-      <div className="flex justify-end ">
+    <div className="flex justify-center">
+      {/* <h1 className="text-2xl font-primary font-medium my-5">Alt-gruplar</h1> */}
+      {/* <div className="flex justify-end">
         <button className="px-6 py-2 bg-colorFirst border rounded-md border-borderColor ">
           Yeni Proje
         </button>
-      </div>
+      </div> */}
+      
       <Paper sx={{ width: "100%", overflow: "hidden" }}>
         <TableContainer sx={{ maxHeight: 700 }}>
           <Table stickyHeader aria-label="sticky table">
@@ -134,6 +147,12 @@ export default function SubGroupsPage() {
                   </TableCell>
                 </TableRow>
               )}
+              <TableRow>
+                  <TableCell colSpan={columns.length} align="center">
+                    <button onClick={() => handleCreateSubGroup()} className="py-2 px-4 border-dashed border-2 border-borderColor rounded-lg">Oluştur</button>
+                    {isModalOpen && <CreateSubGroupModal groupId={groupId} closeModal={closeModal}></CreateSubGroupModal>}
+                  </TableCell>
+                </TableRow>
             </TableBody>
           </Table>
         </TableContainer>

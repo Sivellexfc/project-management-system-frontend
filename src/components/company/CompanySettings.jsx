@@ -10,8 +10,14 @@ import CompanyUsersListCard from "./CompanyUsersListCard";
 
 const CompanySettings = () => {
   const [selectedComponent, setSelectedComponent] = useState("profile");
-
-  console.log("selected : ",selectedComponent)
+  const options = {
+    profile:"Profil",
+    projects:"Projeler",
+    groups:"Gruplar",
+    subgroups:"Alt Gruplar",
+    employees:"Üyeler"
+  }
+  
   const renderComponent = () => {
     switch (selectedComponent) {
 
@@ -36,8 +42,11 @@ const CompanySettings = () => {
   };
 
   return (
-    <div className="w-full flex flex-col">
-      <h1 className="font-primary text-3xl font-medium ">Şirket ayarları</h1>
+    <div className="w-full flex flex-col space-y-6">
+      <div>
+      <h1 className="font-primary text-3xl font-semibold">Şirket ayarları</h1>
+      <h1 className="font-primary text-2xl font-light">{"- "+ options[selectedComponent]}</h1>
+      </div>
       {/* <h2 className="font-md text-xl pb-10">{selectedComponent}</h2> */}
       <Header setSelectedComponent={setSelectedComponent} ></Header>
       <div className="">{renderComponent()}</div>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 const Header = ({setSelectedComponent}) => {
   return (
-    <header className="border border-[#EEEEEE] shadow-sm bg-colorFirst px-10">
+    <header className="border border-borderColor bg-colorFirst px-10">
         <nav className=" flex justify-start gap-6 py-4 text-gray-700">
 
           <button

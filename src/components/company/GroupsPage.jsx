@@ -12,21 +12,23 @@ import { useEffect } from "react";
 import { useState } from "react";
 import AddGroup from "./components/AddGroup";
 import { fetchData } from "../../services/groupServices/GetCompanyGroups";
+import { BiArrowToBottom, BiEdit, BiTrash } from "react-icons/bi";
+import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import SubGroupsPage from "./SubGroupsPage";
 
 const columns = [
   { id: "name", label: "Name", minWidth: 170 },
-  { id: "startDate", label: "Start Date", minWidth: 170 },
-  { id: "group", label: "Group", minWidth: 170 },
-  { id: "subgroup", label: "Sub-group", minWidth: 170 },
-  { id: "action", label: "Actions", minWidth: 170 },
+
+  { id: "action", label: "Actions", minWidth: 170, align: "center" },
 ];
 
-function createData(name, startDate, group, subgroup, action) {
-  return { name, startDate, group, subgroup, action };
+function createData(id, name, startDate, group, subgroup, action) {
+  return { id, name, startDate, group, subgroup, action };
 }
 
 export default function GroupsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal'ı açıp kapatma state'i
+  const [selectedGroup, setSelectedGroup] = useState("");
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -36,19 +38,23 @@ export default function GroupsPage() {
     const getData = async () => {
       try {
         const result = await fetchData("3"); // Backend'den veri çekme
-        console.log(result)
-        console.log("data : ",data)
+        console.log(result);
+        console.log("data : ", data);
         setData(result);
       } catch (error) {
         console.error("Veri çekme başarısız:", error);
       }
     };
-
     getData();
   }, []);
 
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [rowsPerPage, setRowsPerPage] = React.useState(8);
+
+  const handleGroupClick = (groupId) => {
+    setSelectedGroup(groupId);
+    console.log("groupıd : " + groupId);
+  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -69,6 +75,7 @@ export default function GroupsPage() {
     data && Array.isArray(data)
       ? data.map((item) =>
           createData(
+            item.id,
             item.name,
             item.startDate,
             item.group,
@@ -79,8 +86,8 @@ export default function GroupsPage() {
       : [];
 
   return (
-    <div>
-      <h1 className="text-2xl font-primary my-5 font-medium">Gruplar</h1>
+    <div className="">
+      {/* <h1 className="text-2xl font-primary my-5 font-medium">Gruplar</h1> */}
       <div className="flex justify-end mb-10">
         <button
           onClick={openModal}
@@ -90,75 +97,159 @@ export default function GroupsPage() {
         </button>
         {isModalOpen && <AddGroup closeModal={closeModal}></AddGroup>}
       </div>
-      <Paper sx={{ width: "100%", overflow: "hidden" }}>
-        <TableContainer sx={{ maxHeight: 700 }}>
-          <Table stickyHeader aria-label="sticky table">
-            <TableHead>
-              <TableRow>
-                {columns.map((column) => (
-                  <TableCell
-                    key={column.id}
-                    align={column.align}
-                    style={{ minWidth: column.minWidth }}
-                  >
-                    {column.label}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {/* Eğer veri varsa, verileri göster, yoksa boş tablo */}
-              {rows.length > 0 ? (
-                rows
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row) => (
-                    <TableRow
-                      hover
-                      role="checkbox"
-                      tabIndex={-1}
-                      key={row.name}
-                    >
-                      {columns.map((column) => {
-                        const value = row[column.id];
-                        return (
-                          <TableCell key={column.id} align={column.align}>
-                            {column.id === "action" ? (
-                              <Button
-                                onClick={() => handleEditClick(row)}
-                                variant="outlined"
+      <div className="flex gap-10">
+        <div className="flex-2">
+          {" "}
+          <h1 className="font-primary text-2xl font-light">Gruplar</h1>
+          <Paper
+            sx={{
+              width: "100%",
+              overflow: "hidden",
+              border: "1px solid #EEEEEE",
+            }}
+            elevation={0}
+          >
+            <TableContainer sx={{ maxHeight: 700 }}>
+              <Table stickyHeader aria-label="sticky table">
+                <TableHead>
+                  <TableRow>
+                    {columns.map((column) => (
+                      <TableCell
+                        key={column.id}
+                        align="center"
+                        style={{ minWidth: column.minWidth }}
+                      >
+                        {column.label}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody sx={{ border: "1px solid #EEEEEE" }}>
+                  {/* Eğer veri varsa, verileri göster, yoksa boş tablo */}
+                  {rows.length > 0 ? (
+                    rows
+                      .slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
+                      .map((row) => (
+                        <TableRow
+                          sx={{
+                            cursor: "pointer",
+                            backgroundColor:
+                              selectedGroup === row.id ? "#f0f0f0" : "inherit",
+                          }}
+                          hover
+                          onClick={() => handleGroupClick(row.id)} // Grup seçme işlemi
+                          role="checkbox"
+                          tabIndex={-1}
+                          key={row.id}
+                        >
+                          {columns.map((column) => {
+                            const value = row[column.id];
+                            return (
+                              <TableCell
+                                sx={{ padding: "8px 24px" }}
+                                key={column.id}
+                                align={column.align}
                               >
-                                Düzenle
-                              </Button>
-                            ) : (
-                              value
-                            )}
-                          </TableCell>
-                        );
-                      })}
+                                {column.id === "action" ? (
+                                  <div className="space-x-2 flex justify-center">
+                                    {/* Düzenle Butonu */}
+                                    <Button
+                                      onClick={() => handleEditClick(row)}
+                                      variant="outlined"
+                                      sx={{
+                                        font: "light",
+                                        minWidth: "auto",
+                                        height: "28px",
+                                        padding: "2px 8px",
+                                        fontSize: "0.8rem",
+                                        borderColor: "#eeeeee",
+                                        color: "gray",
+                                        "&:hover": {
+                                          borderColor: "darkgray",
+                                          color: "darkgray",
+                                        },
+                                      }}
+                                    >
+                                      Düzenle
+                                    </Button>
+
+                                    {/* Çöp Kutusu Butonu */}
+                                    <Button
+                                      onClick={() => handleEditClick(row)}
+                                      variant="text" // Border'ı kaldır
+                                      sx={{
+                                        minWidth: "auto",
+                                        height: "28px",
+                                        padding: "2px 8px",
+                                        color: "black", // Rengi siyah yap
+                                        border: "none", // Border tamamen kaldırıldı
+                                      }}
+                                    >
+                                      <BiTrash size={22} />
+                                    </Button>
+
+                                    {/* Ok Butonu */}
+                                    <Button
+                                      onClick={() => handleEditClick(row)}
+                                      className="ml-100 h-7 text-black"
+                                    >
+                                      <MdOutlineKeyboardArrowDown
+                                        className="w-6 h-6"
+                                        style={{ color: "black" }}
+                                      />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  value
+                                )}
+                              </TableCell>
+                            );
+                          })}
+                        </TableRow>
+                      ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} align="center">
+                        {data === null
+                          ? "Veriler yükleniyor..."
+                          : "No Data Available"}
+                      </TableCell>
                     </TableRow>
-                  ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columns.length} align="center">
-                    {data === null
-                      ? "Veriler yükleniyor..."
-                      : "No Data Available"}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 100]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[10, 25, 100]}
+              component="div"
+              count={rows.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Paper>
+        </div>
+
+        <div className="flex-2">
+          <h1 className="font-primary text-2xl font-light">Alt-gruplar</h1>
+          {selectedGroup ? (
+            <SubGroupsPage groupId={selectedGroup} />
+          ) : (
+            <div className="flex items-center justify-center h-full border border-borderColor rounded-sm text-gray-500">
+              <span>Bir grup seçin</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1">
+          <h1 className="font-primary text-2xl font-light">Çalışanlar</h1>
+          <SubGroupsPage></SubGroupsPage>
+        </div>
+      </div>
     </div>
   );
 }

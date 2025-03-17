@@ -9,7 +9,9 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import Button from "@mui/material/Button";
 import { useEffect } from "react";
-import { fetchData } from "../../services/companyServices/GetCompanyEmployees";
+import CreateNewProject from "./components/CreateNewProjectModal";
+import { useState } from "react";
+import { fetchData } from "../../services/projectServices/GetProjects";
 
 const columns = [
   { id: "name", label: "Name", minWidth: 170 },
@@ -24,13 +26,18 @@ function createData(name, startDate, group, subgroup, action) {
 }
 
 export default function ProjectSettings() {
-  const [data, setData] = React.useState(null);
+  const [data, setData] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   useEffect(() => {
     const getData = async () => {
       try {
-        const result = await fetchData("3"); // Backend'den veri çekme
-        setData(result);
+        const result = await fetchData("3",); // Backend'den veri çekme
+        setData(result.result);
+        console.log(result)
       } catch (error) {
         console.error("Veri çekme başarısız:", error);
       }
@@ -72,11 +79,12 @@ export default function ProjectSettings() {
 
   return (
     <div>
-      <h1 className="text-2xl font-primary font-medium my-5">Projeler</h1>
+      {/* <h1 className="text-2xl font-primary font-medium my-5">Projeler</h1> */}
       <div className="flex justify-end">
-        <button className="px-6 py-2 bg-colorFirst border rounded-md border-borderColor ">
+        <button onClick={openModal} className="px-6 py-2 bg-colorFirst border rounded-md border-borderColor ">
           Yeni Proje
         </button>
+        {isModalOpen && <CreateNewProject closeModal={closeModal}></CreateNewProject>}
       </div>
       <Paper sx={{ width: "100%", overflow: "hidden" }}>
         <TableContainer sx={{ maxHeight: 700 }}>

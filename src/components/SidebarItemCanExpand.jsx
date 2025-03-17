@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-
-
+import { BiArrowToBottom } from "react-icons/bi";
+import { BsArrowsExpand } from "react-icons/bs";
+import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 
 /**
- * 
+ *
  * Bu nesne üzerine tıklandığında alt seçenekleriyle beraber gelir.
  */
 const SidebarItemCanExpand = ({
@@ -32,7 +33,11 @@ const SidebarItemCanExpand = ({
       >
         {icon}
         {!isCollapsed && (
-          <span className="ml-2 text-sm font-normal">{text}</span>
+          <div className="flex flex-row w-full justify-between items-center">
+            <span className="ml-2 text-sm font-normal">{text}</span>
+            <MdOutlineKeyboardArrowDown/>
+          </div>
+          
         )}
       </li>
       {isExpanded && !isCollapsed && (

@@ -31,6 +31,7 @@ import CompanySettings from "./components/company/CompanySettings.jsx";
 import InvitedUserPage from "./pages/InviteRedirect.jsx";
 import { createTheme, ThemeProvider } from "@mui/material";
 import UserAddCompanyDirection from "./pages/UserAddCompanyDirection.jsx";
+import SelectAccountType from "./components/Login/SelectAccountType.jsx";
 
 const ProtectedRoute = ({ children }) => {
   const accessTokenn = useSelector((state) => state.auth.accessToken);
@@ -45,25 +46,26 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const RestrictWhenLoggenInRoutes = ({ children }) => {
-  const accessTokenn = useSelector((state) => state.auth.accessToken);
-
   const accessToken = Cookies.get("accessToken");
-  console.log("token : " + accessToken);
+  const selectedCompany = localStorage.getItem("selectedCompany"); // Şirket seçildi mi?
 
   if (accessToken) {
-    return <Navigate to="/dashboard" replace />;
+    if (!selectedCompany) {
+      return <Navigate to="/selectCompany" replace />;  // Şirket seçilmediyse yönlendir
+    }
+    return <Navigate to="/dashboard" replace />;  // Şirket seçildiyse dashboard'a gönder
   }
   return children;
 };
 
+
 const App = () => {
   const theme = createTheme({
     typography: {
-      fontFamily: [
-        'Inter'
-      ].join(','),
-    },});
-  
+      fontFamily: ["Inter"].join(","),
+    },
+  });
+
   return (
     <ThemeProvider theme={theme}>
       <AuthProvider>
@@ -86,16 +88,21 @@ const App = () => {
             <Route path="/issues" element={<KanbanBoard />} />
           </Route>
 
-
           {/* Login rotası */}
           <Route path="/" element={<Navigate to={"/home"} />} />
-          <Route path="/verification" element={
+          <Route
+            path="/verification"
+            element={
               <RestrictWhenLoggenInRoutes>
                 <Login />
               </RestrictWhenLoggenInRoutes>
-            } />
+            }
+          />
           <Route path="/auth/verify" element={<VerifyEmail />} />
           <Route path="/invite" element={<InvitedUserPage />} />
+          <Route path="/selectType" element={<SelectAccountType />} />
+          <Route path="/selectCompany" element={<SelectCompany />}></Route>
+
           <Route
             path="/login"
             element={
@@ -104,27 +111,29 @@ const App = () => {
               </RestrictWhenLoggenInRoutes>
             }
           />
-          <Route path="/userAddToCompany" element={<UserAddCompanyDirection></UserAddCompanyDirection>}></Route>
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/register" element={
-              <RestrictWhenLoggenInRoutes>
-                <Login />
-              </RestrictWhenLoggenInRoutes>
-            } />
-          <Route path="/subscription" element={<SubscriptionPage />} />
-          <Route path="/newCompany" element={
-              <RestrictWhenLoggenInRoutes>
-                <Login />
-              </RestrictWhenLoggenInRoutes>
-            } />
           <Route
-            path="/selectCompany"
+            path="/userAddToCompany"
+            element={<UserAddCompanyDirection></UserAddCompanyDirection>}
+          ></Route>
+          <Route path="/home" element={<HomePage />} />
+          <Route
+            path="/register"
             element={
               <RestrictWhenLoggenInRoutes>
-                <Login />
+                <SelectAccountType />
               </RestrictWhenLoggenInRoutes>
             }
-          ></Route>
+          />
+          <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route
+            path="/newCompany"
+            element={
+              <RestrictWhenLoggenInRoutes>
+                <CreateCompany />
+              </RestrictWhenLoggenInRoutes>
+            }
+          />
+          
         </Routes>
       </AuthProvider>
     </ThemeProvider>

@@ -6,9 +6,10 @@ import { useEffect } from "react";
 import { addUserToCompany } from "../services/companyServices/AddUserToCompany";
 import { jwtDecode } from "jwt-decode";
 
-const Register = () => {
+const Register = ({type}) => {
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
+
   const [companyId, setCompanyId] = useState("");
 
   const [invitedUser, setInvitedUser] = useState(false);
@@ -24,6 +25,7 @@ const Register = () => {
           setInvitedUser(true);
           console.log(decoded.userMail);
           setEmail(decoded.userMail); // Eğer userMail varsa email state'ine ata
+          setSelectedRoleName("USER");
         }
       } catch (error) {
         console.error("Token decode edilirken hata oluştu:", error);
@@ -35,8 +37,10 @@ const Register = () => {
   const [lastName, setlastName] = useState("");
   const [password, setpassword] = useState("");
   const [phone, setphone] = useState("");
+  const [showPhone, setShowPhone] = useState("");
   const [photo, setphoto] = useState("https://example.com/profiles/ahmet.jpg");
-  const [roleName, setSelectedRoleName] = useState("");
+  const [roleName, setSelectedRoleName] = useState(type);
+  
 
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -104,12 +108,13 @@ const Register = () => {
 
   const handlePhoneChange = (e) => {
     const formattedPhone = formatPhoneNumber(e.target.value);
+    setShowPhone(formattedPhone);
     setphone(formattedPhone.replace(/\D/g, "")); // formatlanmış değeri set et
   };
 
   return (
-    <div className="max-w-lg mx-auto bg-white p-6 mb-[100px] mt-[100px] rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-gray-700">KAYIT OL</h2>
+    <div className="max-w-lg mx-auto border border-borderColor bg-colorFirst p-6 my-auto rounded-lg">
+      <h2 className="text-2xl mb-6 font-md text-center">Yeni Hesap Oluştur</h2>
       <form onSubmit={handleSubmit} encType="multipart/form-data">
         <div className="mb-4">
           <label className="block text-gray-700">Ad</label>
@@ -118,18 +123,18 @@ const Register = () => {
             value={firstName}
             onChange={(e) => setfirstName(e.target.value)}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-sm px-4 py-2 border border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700">Soyad</label>
+          <label className="block text-gray-700 ">Soyad</label>
           <input
             type="text"
             value={lastName}
             onChange={(e) => setlastName(e.target.value)}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-sm px-4 py-2 border border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
           />
         </div>
 
@@ -141,24 +146,24 @@ const Register = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-sm px-4 py-2 border border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
           />
         </div>
 
-        <div className="mb-4">
+        {!invitedUser && <div className="mb-4">
           <label className="block text-gray-700">Type</label>
           <select
             id="options"
             value={roleName}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-sm px-4 py-2 border border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
           >
             <option value="">Seçiniz...</option>
             <option value="COMPANY_OWNER">Kurumsal</option>
             <option value="USER">Bireysel Kullanıcı</option>
             <option value="ADMIN">Admin</option>
           </select>
-        </div>
+        </div>}
 
         <div className="mb-4">
           <label className="block text-gray-700">Parola</label>
@@ -167,7 +172,7 @@ const Register = () => {
             value={password}
             onChange={(e) => setpassword(e.target.value)}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-sm px-4 py-2 border border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
           />
         </div>
 
@@ -178,7 +183,7 @@ const Register = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-sm px-4 py-2 border border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
           />
         </div>
 
@@ -186,17 +191,17 @@ const Register = () => {
           <label className="block text-gray-700">Telefon Numarası</label>
           <input
             type="tel" // input tipini 'tel' yaparak telefon numarası girişine uygun hale getirebilirsin
-            value={phone}
+            value={showPhone}
             onChange={handlePhoneChange}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-sm px-4 py-2 border border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
             placeholder="(XXX) XXX-XXXX"
           />
         </div>
 
         <button
           type="submit"
-          className="w-full bg-colorSecond text-white py-3 mt-[20px] px-4 hover:bg-colorSecond hover:opacity-80 transition duration-200"
+          className="w-full border border-borderColor bg-colorFirst text-primary  py-3 mt-[20px] px-4 hover:bg-colorSecond hover:opacity-80 transition duration-200"
         >
           ONAYLA
         </button>

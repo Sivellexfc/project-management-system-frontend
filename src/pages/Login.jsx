@@ -7,6 +7,9 @@ import { Navigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import Cookies from 'js-cookie';
 import axios from "axios";
+import { BiArrowToRight } from "react-icons/bi";
+import { BsArrowBarRight } from "react-icons/bs";
+import { CgArrowRight } from "react-icons/cg";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,7 +18,7 @@ const Login = () => {
   const dispatch = useDispatch();
 
   const handleLogin = async (event) => {
-    
+
     event.preventDefault();
     try {
       // const response = await api.post('/auth/login', { email, password });
@@ -29,23 +32,19 @@ const Login = () => {
         }
       );
       const accessToken = response.data.result.accessToken;
-
+     
       Cookies.set('accessToken', accessToken);
-      
-
-      dispatch(setAuth({ accessToken }));
       navigate('/selectCompany');
+      dispatch(setAuth({ accessToken }));
     } catch (error) {
       console.error('Giriş hatası:', error);
     }
-
-
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
+      <div className="bg-white p-8 rounded-lg shadow-sm border border-borderColor w-full max-w-md">
+        <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
           GİRİŞ YAP
         </h2>
         <form>
@@ -63,7 +62,7 @@ const Login = () => {
               type="email"
               id="email"
               placeholder="Enter your email"
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-sm px-4 py-2 border border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
             />
           </div>
 
@@ -81,23 +80,25 @@ const Login = () => {
               type="password"
               id="password"
               placeholder="Enter your password"
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-sm px-4 py-2 border border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
             />
           </div>
 
           {/* Login Button */}
+          <div className="w-full flex justify-center">
           <button
             onClick={handleLogin}
             type="submit"
-            className="w-full bg-colorSecond text-primary py-2 px-4 rounded-lg hover:bg-blue-300 transition duration-200"
+            className="w-100px border-sky-500 border hover:bg-sky-500 bg-colorSecond text-primary py-2 px-4 rounded-lg hover:bg-blue-300 transition duration-200 mt-10"
           >
-            Giriş Yap
+            <CgArrowRight></CgArrowRight>
           </button>
+          </div>
         </form>
 
         {/* Additional Links */}
         <div className="mt-6 text-center">
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm">
             Hesabınız yok mu?{" "}
             <a href="/register" className="text-blue-500 hover:underline">
               Kayıt Ol!

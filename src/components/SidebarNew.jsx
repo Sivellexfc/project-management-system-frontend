@@ -26,11 +26,43 @@ import { SettingsMenu } from "./SettingsMenu";
 import { useAuth } from "../Context/AuthContext";
 import { Link } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import { FaCalendarAlt, FaTasks, FaBullhorn, FaChartBar, FaQuestionCircle, FaBuilding, FaUserShield } from "react-icons/fa";
+import { GoProject } from "react-icons/go";
+import { VscGithubProject } from "react-icons/vsc";
+
+
+import {
+  PiProjectorScreenChart,
+  PiProjectorScreenChartLight,
+} from "react-icons/pi";
+
+import {
+  FaCalendarAlt,
+  FaTasks,
+  FaBullhorn,
+  FaChartBar,
+  FaQuestionCircle,
+  FaBuilding,
+  FaUserShield,
+} from "react-icons/fa";
+import { fetchData } from "../services/projectServices/GetProjects";
+import { useEffect } from "react";
 
 const SidebarNew = () => {
-  const { user } = useAuth();
-  console.log(user);
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const result = await fetchData("3"); // Backend'den veri çekme
+        setData(result.result);
+        console.log(result);
+      } catch (error) {
+        console.error("Veri çekme başarısız:", error);
+      }
+    };
+
+    getData();
+  }, []);
 
   const menuItems = [
     {
@@ -58,13 +90,29 @@ const SidebarNew = () => {
       icon: <FaChartBar />,
     },
     {
+      name: "Projeler",
+      path: "/projects",
+      roles: ["USER", "ADMIN", "COMPANY_OWNER"],
+      icon: <PiProjectorScreenChart />,
+    },
+    {
       name: "Yardım",
       path: "/help",
       roles: ["USER", "ADMIN", "COMPANY_OWNER"],
       icon: <FaQuestionCircle />,
     },
-    { name: "Şirket", path: "/company", roles: ["COMPANY_OWNER","ADMIN"],icon: <FaBuilding />, }, // Sadece COMPANY_OWNER görecek
-    { name: "Admin Panel", path: "/admin", roles: ["ADMIN"],icon: <FaUserShield />, }, // Sadece ADMIN görecek
+    {
+      name: "Şirket",
+      path: "/company",
+      roles: ["COMPANY_OWNER", "ADMIN"],
+      icon: <FaBuilding />,
+    }, // Sadece COMPANY_OWNER görecek
+    {
+      name: "Admin Panel",
+      path: "/admin",
+      roles: ["ADMIN"],
+      icon: <FaUserShield />,
+    }, // Sadece ADMIN görecek
   ];
 
   const accessToken = Cookies.get("accessToken");
@@ -83,7 +131,6 @@ const SidebarNew = () => {
   const filteredMenu = menuItems.filter((item) =>
     item.roles.includes(userinfos.userRole)
   );
-  
 
   return (
     <div className="flex z-50">
@@ -109,13 +156,33 @@ const SidebarNew = () => {
             </button>
           </div>
 
-          {/* Menü Seçenekleri */}
           <ul className="flex-1 px-3">
-            {filteredMenu.map((item) => (
-              <SidebarItem text={item.name} icon={item.icon} link={item.path} isCollapsed={isCollapsed}>
-
-              </SidebarItem>
-            ))}
+            {filteredMenu.map((item) =>
+              item.path === "/projects" ? (
+                <SidebarItemCanExpand
+                  key={item.path}
+                  text="Projeler"
+                  icon={<VscGithubProject />}
+                  isCollapsed={isCollapsed}
+                  subItems={
+                    data?.length > 0
+                      ? data.map((project) => ({
+                          text: project.name, // Proje adını subItem olarak ekliyoruz
+                          icon: <GoProject />, // Proje ikonunu da ekledim
+                        }))
+                      : [{ text: "Projeler bulunamadı", icon: null }]
+                  }
+                />
+              ) : (
+                <SidebarItem
+                  key={item.path}
+                  text={item.name}
+                  icon={item.icon}
+                  link={item.path}
+                  isCollapsed={isCollapsed}
+                />
+              )
+            )}
           </ul>
 
           {/* Kullanıcı Bilgileri */}
