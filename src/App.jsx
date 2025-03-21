@@ -37,7 +37,6 @@ const ProtectedRoute = ({ children }) => {
   const accessTokenn = useSelector((state) => state.auth.accessToken);
 
   const accessToken = Cookies.get("accessToken");
-  console.log("token : " + accessToken);
 
   if (!accessToken) {
     return <Navigate to="/home" replace />;
@@ -86,7 +85,7 @@ const App = () => {
             <Route path="/company" element={<CompanySettings />} />
             <Route path="/help" element={<Help />} />
             <Route path="/issues" element={<KanbanBoard />} />
-            <Route path="/project/kanbanBoard" element={<KanbanBoard />} />
+            <Route path="/project/kanbanBoard/:projectId" element={<KanbanBoard />} />
           </Route>
 
           {/* Login rotası */}

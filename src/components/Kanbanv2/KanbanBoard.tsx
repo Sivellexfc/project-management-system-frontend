@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Column, Task, Id } from "./types";
 import KanbanColumn from "./KanbanColumn";
 import {
@@ -11,29 +11,53 @@ import {
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
-import { tasks as initialTasks } from "./datas";
 import { columns as initialColumns } from "./datas";
+import { useParams } from "react-router-dom";
+import { getIssuesByProjectId } from "../../services/issueServices/GetIssuesByProjectId";
+import Cookies from "js-cookie";
 
-const KanbanBoard = ({ projectName, projectId }) => {
-  
+const KanbanBoard = ({}) => {
+  const { projectId } = useParams();
   const [columns, setColumns] = useState<Column[]>(initialColumns);
-  const [tasks, setTasks] = useState<Task[]>([]);
 
-  const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  function createTask(columnId: Id): void {
-    const newTask: Task = {
-      id: generateId(),
-      title: "title",
-      columnId,
-      content: `Task ${tasks.length + 1}`,
-    };
-    console.log(tasks);
-    setTasks([...tasks, newTask]);
-  }
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      const response = await getIssuesByProjectId(Cookies.get("selectedCompanyId"),Number(projectId));
+      if (response.isSuccess) {
+        console.log(tasks);
+        console.log(response);
+      
+        // ID değerlerini string'e dönüştürerek setTasks ile güncelleme
+        const updatedTasks = response.result.map((task) => ({
+          ...task,
+          id: String(task.id), // ID'yi string'e çevir
+        }));
+      
+        setTasks((prevTasks) => [...prevTasks, ...updatedTasks]);
+      }
+      else {
+        setError('Görevler yüklenirken bir hata oluştu.');
+      }
+    } catch (err) {
+      setError('Görevler yüklenirken bir hata oluştu.');
+      console.error('Error fetching tasks:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
 
   return (
     <div className="space-y-10">
@@ -55,8 +79,7 @@ const KanbanBoard = ({ projectName, projectId }) => {
                 <KanbanColumn
                   key={col.id}
                   column={col}
-                  createTask={createTask}
-                  tasks={tasks.filter((task) => task.columnId === col.id)}
+                  tasks={tasks.filter((task) => task.stageId === col.id)}
                 ></KanbanColumn>
               ))}
             </div>
@@ -66,9 +89,8 @@ const KanbanBoard = ({ projectName, projectId }) => {
               {activeColumn && (
                 <KanbanColumn
                   tasks={tasks.filter(
-                    (task) => task.columnId === activeColumn.id
+                    (task) => task.stageId === activeColumn.id
                   )}
-                  createTask={createTask}
                   column={activeColumn}
                 ></KanbanColumn>
               )}
@@ -95,12 +117,10 @@ const KanbanBoard = ({ projectName, projectId }) => {
 
     const activeType = active.data.current?.type;
     const overType = over.data.current?.type;
-
     // Eğer kolon sürükleniyorsa, işlem yapma
     if (activeType === "Column") {
       return;
     }
-
     // Eğer sürüklenen öğe bir Task ise:
     if (activeType === "Task") {
       setTasks((prevTasks) => {
@@ -110,12 +130,12 @@ const KanbanBoard = ({ projectName, projectId }) => {
         if (overType === "Task") {
           // Eğer başka bir Task'in üzerine bırakıldıysa:
           const overTaskIndex = prevTasks.findIndex((t) => t.id === overId);
-          updatedTasks[activeTaskIndex].columnId =
-            prevTasks[overTaskIndex].columnId;
+          updatedTasks[activeTaskIndex].stageId =
+            prevTasks[overTaskIndex].stageId;
           return arrayMove(updatedTasks, activeTaskIndex, overTaskIndex);
         } else if (overType === "Column") {
           // Eğer doğrudan bir Kolon'un içine bırakıldıysa:
-          updatedTasks[activeTaskIndex].columnId = overId;
+          updatedTasks[activeTaskIndex].stageId = overId;
           return updatedTasks;
         }
 
@@ -138,7 +158,7 @@ const KanbanBoard = ({ projectName, projectId }) => {
       setTasks((tasks) => {
         const activeIndex = tasks.findIndex((t) => t.id === activeId);
         const overIndex = tasks.findIndex((t) => t.id === overId);
-        tasks[activeIndex].columnId = tasks[overIndex].columnId;
+        tasks[activeIndex].stageId = tasks[overIndex].stageId;
         return arrayMove(tasks, activeIndex, overIndex);
       });
     }
@@ -148,7 +168,7 @@ const KanbanBoard = ({ projectName, projectId }) => {
       setTasks((tasks) => {
         const activeIndex = tasks.findIndex((t) => t.id === activeId);
 
-        tasks[activeIndex].columnId = overId;
+        tasks[activeIndex].stageId = overId;
 
         return arrayMove(tasks, activeIndex, activeIndex);
       });

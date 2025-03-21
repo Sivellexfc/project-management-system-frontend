@@ -29,7 +29,6 @@ import Sidebar from "./Sidebar";
 import { GoProject } from "react-icons/go";
 import { VscGithubProject } from "react-icons/vsc";
 
-
 import {
   PiProjectorScreenChart,
   PiProjectorScreenChartLight,
@@ -162,16 +161,16 @@ const SidebarNew = () => {
                 <SidebarItemCanExpand
                   key={item.path}
                   text="Projeler"
-                  path="/project/kanbanBoard"
                   icon={<VscGithubProject />}
                   isCollapsed={isCollapsed}
                   subItems={
                     data?.length > 0
                       ? data.map((project) => ({
                           text: project.name, // Proje adını subItem olarak ekliyoruz
-                          icon: <GoProject />, // Proje ikonunu da ekledim
+                          icon: <GoProject />, // Proje ikonunu ekliyoruz
+                          path: `/project/kanbanBoard/${project.id}`, // Her proje için dinamik path ekledik
                         }))
-                      : [{ text: "Projeler bulunamadı", icon: null }]
+                      : [{ text: "Projeler bulunamadı", icon: null, path: "#" }]
                   }
                 />
               ) : (

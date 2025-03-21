@@ -7,14 +7,12 @@ import TaskModal from "./TaskModal";
 
 interface Props {
   column: Column;
-  createTask: (columnId: Id, title: string, description: string) => void;
   tasks: Task[];
 }
 
 function KanbanColumn(props: Props) {
-  const { column, createTask, tasks } = props;
+  const { column, tasks } = props;
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const {
     setNodeRef,
     attributes,
@@ -30,10 +28,7 @@ function KanbanColumn(props: Props) {
     },
   });
 
-  function handleCreateTask(title: string, description: string) {
-    createTask(column.id, title, description); // Yeni görev ekle
-    setIsModalOpen(false); // Modalı kapat
-  }
+  console.log(column.color);
 
   const style = {
     transition,
@@ -50,19 +45,21 @@ function KanbanColumn(props: Props) {
     );
   }
 
-  const tasksId = useMemo(() => {
-    return tasks.map((task) => task.id);
-  }, [tasks]);
+  const tasksId = tasks.map((task) => task.id); // useMemo yerine doğrudan
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className="w-[350px] h-[600px] flex flex-col 
-      rounded-md items-center justify-between"
+      rounded-md items-center justify-between space-y-2"
     >
       <div className="w-full flex justify-start h-10 items-center">
-        <div className="w-5 h-5 bg-[#EED12B] rounded-full mr-2 shrink-0"></div>
+        <div
+          style={{ backgroundColor: column.color }}
+          className="w-5 h-5 rounded-full mr-2 shrink-0"
+        ></div>
+
         <div className="w-full cursor-grab">{column.title}</div>
       </div>
 
@@ -81,11 +78,9 @@ function KanbanColumn(props: Props) {
           ))}
         </SortableContext>
       </div>
-      
+
       {/* Modal */}
-      {isModalOpen && <TaskModal onClose={() => setIsModalOpen(false)} onSave={handleCreateTask} />}
-   
-      
+      {isModalOpen && <TaskModal onClose={() => setIsModalOpen(false)} />}
     </div>
   );
 }

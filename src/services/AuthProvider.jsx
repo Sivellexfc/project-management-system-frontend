@@ -9,7 +9,6 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   // Cookie'den access token'ı alıyoruz
   const accessToken = Cookies.get('accessToken');
-  console.log("auth provider accessToken : " + accessToken)
 
   // API request interceptor ile access token'ı başlığa ekliyoruz
   useEffect(() => {
