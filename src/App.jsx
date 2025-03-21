@@ -86,6 +86,7 @@ const App = () => {
             <Route path="/company" element={<CompanySettings />} />
             <Route path="/help" element={<Help />} />
             <Route path="/issues" element={<KanbanBoard />} />
+            <Route path="/project/kanbanBoard" element={<KanbanBoard />} />
           </Route>
 
           {/* Login rotası */}

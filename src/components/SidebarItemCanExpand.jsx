@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { BiArrowToBottom } from "react-icons/bi";
 import { BsArrowsExpand } from "react-icons/bs";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { NavLink } from "react-router-dom";
 
 /**
  *
@@ -13,6 +14,7 @@ const SidebarItemCanExpand = ({
   active,
   isCollapsed,
   subItems = [],
+  path
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -43,7 +45,8 @@ const SidebarItemCanExpand = ({
       {isExpanded && !isCollapsed && (
         <ul className="ml-4">
           {subItems.map((subItem, index) => (
-            <li
+            <NavLink to={"/project/kanbanBoard"}>
+              <li
               key={index}
               className="flex items-center py-2 px-3 my-1 font-normal rounded-md cursor-pointer 
                 text-gray-600 hover:bg-indigo-50"
@@ -51,6 +54,7 @@ const SidebarItemCanExpand = ({
               {subItem.icon}
               <span className="ml-2 text-sm">{subItem.text}</span>
             </li>
+            </NavLink>
           ))}
         </ul>
       )}

@@ -162,6 +162,7 @@ const SidebarNew = () => {
                 <SidebarItemCanExpand
                   key={item.path}
                   text="Projeler"
+                  path="/project/kanbanBoard"
                   icon={<VscGithubProject />}
                   isCollapsed={isCollapsed}
                   subItems={

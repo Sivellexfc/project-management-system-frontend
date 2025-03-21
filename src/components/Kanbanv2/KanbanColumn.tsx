@@ -1,17 +1,19 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Column, Id, Task } from "./types";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import TaskCard from "./TaskCard";
+import TaskModal from "./TaskModal";
 
 interface Props {
   column: Column;
-  createTask: (columnId: Id) => void;
+  createTask: (columnId: Id, title: string, description: string) => void;
   tasks: Task[];
 }
 
 function KanbanColumn(props: Props) {
   const { column, createTask, tasks } = props;
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     setNodeRef,
@@ -27,6 +29,11 @@ function KanbanColumn(props: Props) {
       column,
     },
   });
+
+  function handleCreateTask(title: string, description: string) {
+    createTask(column.id, title, description); // Yeni görev ekle
+    setIsModalOpen(false); // Modalı kapat
+  }
 
   const style = {
     transition,
@@ -47,10 +54,6 @@ function KanbanColumn(props: Props) {
     return tasks.map((task) => task.id);
   }, [tasks]);
 
-  function createTaskFunc(id: Id) {
-    createTask(column.id);
-  }
-
   return (
     <div
       ref={setNodeRef}
@@ -66,9 +69,7 @@ function KanbanColumn(props: Props) {
       <div className="w-full border-dashed border-2 py-4 items-center flex justify-center rounded-md hover:border-[#737373] opacity-60 hover:opacity-80 cursor-pointer">
         <button
           className="w-full font-bold"
-          onClick={() => {
-            createTask(column.id);
-          }}
+          onClick={() => setIsModalOpen(true)}
         >
           +
         </button>
@@ -80,6 +81,10 @@ function KanbanColumn(props: Props) {
           ))}
         </SortableContext>
       </div>
+      
+      {/* Modal */}
+      {isModalOpen && <TaskModal onClose={() => setIsModalOpen(false)} onSave={handleCreateTask} />}
+   
       
     </div>
   );

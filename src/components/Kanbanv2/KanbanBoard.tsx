@@ -11,10 +11,11 @@ import {
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
-import {tasks as initialTasks} from "./datas";
-import {columns as initialColumns} from "./datas";
+import { tasks as initialTasks } from "./datas";
+import { columns as initialColumns } from "./datas";
 
-const KanbanBoard = () => {
+const KanbanBoard = ({ projectName, projectId }) => {
+  
   const [columns, setColumns] = useState<Column[]>(initialColumns);
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -26,7 +27,7 @@ const KanbanBoard = () => {
   function createTask(columnId: Id): void {
     const newTask: Task = {
       id: generateId(),
-      title:"title",
+      title: "title",
       columnId,
       content: `Task ${tasks.length + 1}`,
     };
@@ -35,14 +36,21 @@ const KanbanBoard = () => {
   }
 
   return (
-    <div className="mx-auto flex w-full items-center overflow-x-auto overflow-y-hidden px-[40px]">
-      <DndContext
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onDragOver={dragOver}
-      >
-        <div className="m-auto flex gap-4">
-          <div className="flex gap-4">
+    <div className="space-y-10">
+      <div>
+        <h1 className="font-primary text-3xl font-semibold">Kanban Board</h1>
+        <h1 className="font-primary text-2xl font-light">
+          {"- " + "Test Projesi"}
+        </h1>
+      </div>
+      <div className="mx-auto flex w-full items-center overflow-x-auto overflow-y-hidden">
+        <DndContext
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onDragOver={dragOver}
+        >
+          <div className="m-auto flex gap-4">
+            <div className="flex gap-4">
               {columns.map((col) => (
                 <KanbanColumn
                   key={col.id}
@@ -51,71 +59,70 @@ const KanbanBoard = () => {
                   tasks={tasks.filter((task) => task.columnId === col.id)}
                 ></KanbanColumn>
               ))}
+            </div>
           </div>
-          
-        </div>
-        {createPortal(
-          <DragOverlay>
-            {activeColumn && (
-              <KanbanColumn
-                tasks={tasks.filter(
-                  (task) => task.columnId === activeColumn.id
-                )}
-                createTask={createTask}
-                column={activeColumn}
-              ></KanbanColumn>
-            )}
-            {activeTask && <TaskCard task={activeTask}></TaskCard>}
-          </DragOverlay>,
-          document.body
-        )}
-      </DndContext>
+          {createPortal(
+            <DragOverlay>
+              {activeColumn && (
+                <KanbanColumn
+                  tasks={tasks.filter(
+                    (task) => task.columnId === activeColumn.id
+                  )}
+                  createTask={createTask}
+                  column={activeColumn}
+                ></KanbanColumn>
+              )}
+              {activeTask && <TaskCard task={activeTask}></TaskCard>}
+            </DragOverlay>,
+            document.body
+          )}
+        </DndContext>
+      </div>
     </div>
   );
 
   function onDragEnd(event: DragEndEvent) {
     setActiveColumn(null);
     setActiveTask(null);
-  
+
     const { active, over } = event;
     if (!over) return; // Hedef yoksa işlemi durdur
-  
+
     const activeId = active.id;
     const overId = over.id;
-  
+
     if (activeId === overId) return; // Aynı elemansa hiçbir şey yapma
-  
+
     const activeType = active.data.current?.type;
     const overType = over.data.current?.type;
-  
+
     // Eğer kolon sürükleniyorsa, işlem yapma
     if (activeType === "Column") {
       return;
     }
-  
+
     // Eğer sürüklenen öğe bir Task ise:
     if (activeType === "Task") {
       setTasks((prevTasks) => {
         const activeTaskIndex = prevTasks.findIndex((t) => t.id === activeId);
         const updatedTasks = [...prevTasks];
-  
+
         if (overType === "Task") {
           // Eğer başka bir Task'in üzerine bırakıldıysa:
           const overTaskIndex = prevTasks.findIndex((t) => t.id === overId);
-          updatedTasks[activeTaskIndex].columnId = prevTasks[overTaskIndex].columnId;
+          updatedTasks[activeTaskIndex].columnId =
+            prevTasks[overTaskIndex].columnId;
           return arrayMove(updatedTasks, activeTaskIndex, overTaskIndex);
         } else if (overType === "Column") {
           // Eğer doğrudan bir Kolon'un içine bırakıldıysa:
           updatedTasks[activeTaskIndex].columnId = overId;
           return updatedTasks;
         }
-  
+
         return prevTasks;
       });
     }
   }
-  
-
 
   function dragOver(event: DragOverEvent) {
     const { active, over } = event;
@@ -138,29 +145,29 @@ const KanbanBoard = () => {
     const isOverColumn = over.data.current?.type === "Column";
 
     if (isActiveTask && isOverColumn) {
-        setTasks((tasks) => {
-          const activeIndex = tasks.findIndex((t) => t.id === activeId);
-  
-          tasks[activeIndex].columnId = overId;
-  
-          return arrayMove(tasks, activeIndex, activeIndex);
-        });
-      }
+      setTasks((tasks) => {
+        const activeIndex = tasks.findIndex((t) => t.id === activeId);
+
+        tasks[activeIndex].columnId = overId;
+
+        return arrayMove(tasks, activeIndex, activeIndex);
+      });
+    }
   }
 
   function onDragStart(event: DragStartEvent) {
-    console.log("önce")
-    console.log(event.active.data.current)
+    console.log("önce");
+    console.log(event.active.data.current);
     if (event.active.data.current?.type === "Column") {
       setActiveColumn(event.active.data.current.column);
       return;
     }
-    console.log("ortada")
+    console.log("ortada");
     if (event.active.data.current?.type === "Task") {
       setActiveTask(event.active.data.current.task);
       return;
     }
-    console.log("sonra")
+    console.log("sonra");
   }
 
   function createNewColumn() {
