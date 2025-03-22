@@ -9,7 +9,6 @@ import {
 import Layout from "./components/Layout";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
-import Issues from "./components/Issues";
 import Reports from "./components/Reports";
 import Calender from "./components/Calender";
 import Announcement from "./components/Announcement";

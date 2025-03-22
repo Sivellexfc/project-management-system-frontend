@@ -15,6 +15,8 @@ import { fetchData } from "../../services/groupServices/GetCompanyGroups";
 import { BiArrowToBottom, BiEdit, BiTrash } from "react-icons/bi";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import SubGroupsPage from "./SubGroupsPage";
+import UserListBrief from "./components/UsersListBrief";
+import { useParams } from "react-router-dom";
 
 const columns = [
   { id: "name", label: "Name", minWidth: 170 },
@@ -27,6 +29,7 @@ function createData(id, name, startDate, group, subgroup, action) {
 }
 
 export default function GroupsPage() {
+  const { projectId } = useParams();
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal'ı açıp kapatma state'i
   const [selectedGroup, setSelectedGroup] = useState("");
 
@@ -47,6 +50,8 @@ export default function GroupsPage() {
     };
     getData();
   }, []);
+
+  
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(8);
@@ -97,8 +102,9 @@ export default function GroupsPage() {
         </button>
         {isModalOpen && <AddGroup closeModal={closeModal}></AddGroup>}
       </div>
+
       <div className="flex gap-10">
-        <div className="flex-2">
+        <div className="flex-2 w-full">
           {" "}
           <h1 className="font-primary text-2xl font-light">Gruplar</h1>
           <Paper
@@ -114,11 +120,7 @@ export default function GroupsPage() {
                 <TableHead>
                   <TableRow>
                     {columns.map((column) => (
-                      <TableCell
-                        key={column.id}
-                        align="center"
-                        style={{ minWidth: column.minWidth }}
-                      >
+                      <TableCell key={column.id} align="center">
                         {column.label}
                       </TableCell>
                     ))}
@@ -234,20 +236,26 @@ export default function GroupsPage() {
           </Paper>
         </div>
 
-        <div className="flex-2">
-          <h1 className="font-primary text-2xl font-light">Alt-gruplar</h1>
+        <div className="flex-2 w-full">
+          <h1 className="font-primary text-2xl font-light">Alt gruplar</h1>
           {selectedGroup ? (
             <SubGroupsPage groupId={selectedGroup} />
           ) : (
-            <div className="flex items-center justify-center h-full border border-borderColor rounded-sm text-gray-500">
+            <div className="h-fit flex items-center justify-center border border-borderColor rounded-sm text-gray-500">
               <span>Bir grup seçin</span>
             </div>
           )}
         </div>
 
-        <div className="flex-1">
+        <div className="flex-2 w-full">
           <h1 className="font-primary text-2xl font-light">Çalışanlar</h1>
-          <SubGroupsPage></SubGroupsPage>
+          {selectedGroup ? (
+            <UserListBrief groupId={selectedGroup} projectId={projectId} />
+          ) : (
+            <div className="h-fit flex items-center justify-center border border-borderColor rounded-sm text-gray-500">
+              <span>Bir grup seçin</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
