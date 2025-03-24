@@ -11,7 +11,7 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Reports from "./components/Reports";
 import Calender from "./components/Calender";
-import Announcement from "./components/Announcement";
+import Announcement from "./pages/Anouncement";
 import ProjectDetails from "./components/ProjectDetails";
 import Help from "./components/Help";
 import SubscriptionPage from "./pages/SubscriptionPage";
@@ -31,6 +31,8 @@ import InvitedUserPage from "./pages/InviteRedirect.jsx";
 import { createTheme, ThemeProvider } from "@mui/material";
 import UserAddCompanyDirection from "./pages/UserAddCompanyDirection.jsx";
 import SelectAccountType from "./components/Login/SelectAccountType.jsx";
+import AnnouncementDetail from "./components/AnnouncementDetail.jsx";
+import CreateAnnouncement from "./components/CreateAnnouncement.jsx";
 
 const ProtectedRoute = ({ children }) => {
   const accessTokenn = useSelector((state) => state.auth.accessToken);
@@ -80,6 +82,8 @@ const App = () => {
             <Route path="/reports" element={<Reports />} />
             <Route path="/calendar" element={<Calender />} />
             <Route path="/announcement" element={<Announcement />} />
+            <Route path="/announcement/:id" element={<AnnouncementDetail />} />
+            <Route path="/announcement/create" element={<CreateAnnouncement />} />
             <Route path="/projectDetails" element={<ProjectDetails />} />
             <Route path="/company" element={<CompanySettings />} />
             <Route path="/help" element={<Help />} />
@@ -123,13 +127,20 @@ const App = () => {
               </RestrictWhenLoggenInRoutes>
             }
           />
+          <Route
+            path="/register"
+            element={
+              <RestrictWhenLoggenInRoutes>
+                <SelectAccountType />
+              </RestrictWhenLoggenInRoutes>
+            }
+          />
           <Route path="/subscription" element={<SubscriptionPage />} />
+
           <Route
             path="/newCompany"
             element={
-              <RestrictWhenLoggenInRoutes>
                 <CreateCompany />
-              </RestrictWhenLoggenInRoutes>
             }
           />
           

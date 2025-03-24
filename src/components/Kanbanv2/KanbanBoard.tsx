@@ -32,8 +32,6 @@ const KanbanBoard = ({}) => {
       setLoading(true);
       const response = await getIssuesByProjectId(Cookies.get("selectedCompanyId"),Number(projectId));
       if (response.isSuccess) {
-        console.log(tasks);
-        console.log(response);
       
         // ID değerlerini string'e dönüştürerek setTasks ile güncelleme
         const updatedTasks = response.result.map((task) => ({
@@ -60,7 +58,7 @@ const KanbanBoard = ({}) => {
 
 
   return (
-    <div className="space-y-10">
+    <div className="w-full space-y-10">
       <div>
         <h1 className="font-primary text-3xl font-semibold">Kanban Board</h1>
         <h1 className="font-primary text-2xl font-light">
@@ -73,8 +71,8 @@ const KanbanBoard = ({}) => {
           onDragEnd={onDragEnd}
           onDragOver={dragOver}
         >
-          <div className="m-auto flex gap-4">
-            <div className="flex gap-4">
+          <div className="w-full m-auto flex gap-4">
+            <div className="flex gap-4 w-full">
               {columns.map((col) => (
                 <KanbanColumn
                   key={col.id}

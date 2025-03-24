@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import CreateNewProject from "./components/CreateNewProjectModal";
 import { useState } from "react";
 import { fetchData } from "../../services/projectServices/GetProjects";
+import Cookies from "js-cookie";
 
 const columns = [
   { id: "name", label: "Name", minWidth: 170 },
@@ -35,9 +36,10 @@ export default function ProjectSettings() {
   useEffect(() => {
     const getData = async () => {
       try {
-        const result = await fetchData("3",); // Backend'den veri çekme
+        const result = await fetchData(Cookies.get("selectedCompanyId")); // Backend'den veri çekme
+        console.log(result);
         setData(result.result);
-        console.log(result)
+        console.log(result);
       } catch (error) {
         console.error("Veri çekme başarısız:", error);
       }
@@ -81,12 +83,20 @@ export default function ProjectSettings() {
     <div>
       {/* <h1 className="text-2xl font-primary font-medium my-5">Projeler</h1> */}
       <div className="flex justify-end">
-        <button onClick={openModal} className="px-6 py-2 bg-colorFirst border rounded-md border-borderColor ">
+        <button
+          onClick={openModal}
+          className="px-6 py-2 bg-colorFirst border rounded-md border-borderColor "
+        >
           Yeni Proje
         </button>
-        {isModalOpen && <CreateNewProject closeModal={closeModal}></CreateNewProject>}
+        {isModalOpen && (
+          <CreateNewProject closeModal={closeModal}></CreateNewProject>
+        )}
       </div>
-      <Paper sx={{ width: "100%", overflow: "hidden" }}>
+      <Paper
+        sx={{ width: "100%", overflow: "hidden", border: "1px solid #EEEEEE" }}
+        elevation={0}
+      >
         <TableContainer sx={{ maxHeight: 700 }}>
           <Table stickyHeader aria-label="sticky table">
             <TableHead>

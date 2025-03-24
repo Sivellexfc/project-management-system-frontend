@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 
 const API_URL = "http://localhost:8085/api/v1/company"; // API URL'yi kendi API adresinle değiştir
 
-export const postData = async (title, companyId) => {
+export const postData = async (title, companyId,color) => {
   try {
     const token = Cookies.get("accessToken");
     if (!token) {
@@ -12,7 +12,7 @@ export const postData = async (title, companyId) => {
 
     const response = await axios.post(
       `${API_URL}/${companyId}/group`,
-      { name: title },
+      { name: title,color:color },
       {
         headers: {
           Authorization: `Bearer ${token}`, // Token'ı header'a ekle

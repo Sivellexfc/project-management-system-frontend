@@ -117,6 +117,8 @@ const SidebarNew = () => {
   const accessToken = Cookies.get("accessToken");
   const userinfos = jwtDecode(accessToken);
 
+  console.log(userinfos);
+
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const selectedCompany = JSON.parse(
@@ -201,11 +203,11 @@ const SidebarNew = () => {
             >
               <div className="leading-6 py-2 px-2">
                 <div className="flex text-sm">
-                  {/* <p>{selectedCompany.name || "Şirket Seçilmedi"}</p>
-                  <p>{user.userFirstName} </p>
-                  <p>{user.userLastName}</p> */}
+                  <p>{selectedCompany.name || "Şirket Seçilmedi"}</p>
+                  <p>{userinfos.userFirstName} </p>
+                  <p>{userinfos.userLastName}</p>
                 </div>
-                {/* <h4 className="text-[#737373] text-sm">{user.userMail}</h4> */}
+                <h4 className="text-[#737373] text-sm">{userinfos.userMail}</h4>
               </div>
             </div>
             <SettingsMenu></SettingsMenu>

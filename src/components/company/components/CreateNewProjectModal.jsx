@@ -64,7 +64,7 @@ const CreateNewProject = ({ closeModal }) => {
         selectedGroups.map(group => group.id),
         selectedCompanyId
       );
-      
+      console.log(response);
       if (response.isSuccess) {
         alert("Proje başarıyla eklendi!");
         closeModal();

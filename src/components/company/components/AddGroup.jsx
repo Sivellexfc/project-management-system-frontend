@@ -57,7 +57,8 @@ const AddGroup = ({ closeModal }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await postData(title, selectedCompanyId);
+      console.log(selectedColor);
+      const response = await postData(title, selectedCompanyId,selectedColor.value);
       console.log(response);
       if (response.isSuccess) {
         alert("Grup başarıyla eklendi!");
@@ -134,7 +135,7 @@ const AddGroup = ({ closeModal }) => {
               <div className="relative">
                 <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
                   <FaSearch className="text-gray-400 mr-2" />
-                  <input
+                  <input 
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}

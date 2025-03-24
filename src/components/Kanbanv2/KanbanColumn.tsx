@@ -51,7 +51,7 @@ function KanbanColumn(props: Props) {
     <div
       ref={setNodeRef}
       style={style}
-      className="w-[350px] h-[600px] flex flex-col 
+      className="flex-1 h-[600px] flex flex-col 
       rounded-md items-center justify-between space-y-2"
     >
       <div className="w-full flex justify-start h-10 items-center">

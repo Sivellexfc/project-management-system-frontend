@@ -17,6 +17,7 @@ import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import SubGroupsPage from "./SubGroupsPage";
 import UserListBrief from "./components/UsersListBrief";
 import { useParams } from "react-router-dom";
+import Cookies from "js-cookie";
 
 const columns = [
   { id: "name", label: "Name", minWidth: 170 },
@@ -40,7 +41,7 @@ export default function GroupsPage() {
   useEffect(() => {
     const getData = async () => {
       try {
-        const result = await fetchData("3"); // Backend'den veri çekme
+        const result = await fetchData(Cookies.get("selectedCompanyId")); // Backend'den veri çekme
         console.log(result);
         console.log("data : ", data);
         setData(result);
@@ -50,8 +51,6 @@ export default function GroupsPage() {
     };
     getData();
   }, []);
-
-  
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(8);
@@ -205,7 +204,15 @@ export default function GroupsPage() {
                                     </Button>
                                   </div>
                                 ) : (
-                                  value
+                                  <div className="flex items-center  gap-2">
+                                    <div
+                                      className="w-6 h-6 rounded-full flex items-center"
+                                      style={{ backgroundColor: row.color }}
+                                    ></div>
+                                    <span className="text-primary text-center">
+                                      {value}
+                                    </span>
+                                  </div>
                                 )}
                               </TableCell>
                             );
