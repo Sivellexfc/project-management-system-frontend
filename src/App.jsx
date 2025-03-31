@@ -90,14 +90,13 @@ const App = () => {
             <Route path="/issues" element={<KanbanBoard />} />
             <Route path="/project/kanbanBoard/:projectId" element={<KanbanBoard />} />
           </Route>
-
           {/* Login rotası */}
           <Route path="/" element={<Navigate to={"/home"} />} />
           <Route
             path="/verification"
             element={
               <RestrictWhenLoggenInRoutes>
-                <Login />
+                <Verification />
               </RestrictWhenLoggenInRoutes>
             }
           />
@@ -105,7 +104,6 @@ const App = () => {
           <Route path="/invite" element={<InvitedUserPage />} />
           <Route path="/selectType" element={<SelectAccountType />} />
           <Route path="/selectCompany" element={<SelectCompany />}></Route>
-
           <Route
             path="/login"
             element={

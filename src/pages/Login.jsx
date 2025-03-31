@@ -10,6 +10,7 @@ import axios from "axios";
 import { BiArrowToRight } from "react-icons/bi";
 import { BsArrowBarRight } from "react-icons/bs";
 import { CgArrowRight } from "react-icons/cg";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -32,10 +33,16 @@ const Login = () => {
         }
       );
       const accessToken = response.data.result.accessToken;
-     
       Cookies.set('accessToken', accessToken);
-      navigate('/selectCompany');
-      dispatch(setAuth({ accessToken }));
+      const decodedToken = jwtDecode(accessToken);
+      const role = decodedToken.userRole;
+      
+      if (role === 'ADMIN' || role === 'COMPANY_OWNER') {
+        navigate('/selectCompany');
+      } else {
+        console.log(role)
+        console.log(response.data);
+      }
     } catch (error) {
       console.error('Giriş hatası:', error);
     }
@@ -62,7 +69,7 @@ const Login = () => {
               type="email"
               id="email"
               placeholder="Enter your email"
-              className="w-full text-sm px-4 py-2 border border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
+              className="w-full text-sm px-4 py-2 border  border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
             />
           </div>
 

@@ -10,7 +10,6 @@ const SelectCompany = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-
     const getCompanies = async () => {
       try {
         const response = await axios.get(
@@ -23,6 +22,8 @@ const SelectCompany = () => {
           }
         );
 
+        console.log(response.data);
+
         if (response.data.isSuccess) {
           setCompanies(response.data.result || []);
         } else {
@@ -33,12 +34,12 @@ const SelectCompany = () => {
         console.error("API Hatası:", error);
       }
     };
-
     getCompanies();
   }, [accessToken]);
 
   const handleSelect = async (companyId) => {
     setSelectedId(companyId);
+    
     Cookies.set("selectedCompanyId", companyId);
   
     try {
@@ -101,9 +102,9 @@ const SelectCompany = () => {
               onClick={() => handleSelect(company.id)}
             >
               <img
-                src={company.logo || "https://via.placeholder.com/64"}
+                src={company.logo}
                 alt={company.name}
-                className="w-16 h-16 object-contain"
+                className="w-24 h-24 object-contain"
               />
             </div>
           ))

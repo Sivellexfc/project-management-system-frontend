@@ -79,21 +79,33 @@ const CreateCompany = () => {
     };
 
     try {
+      const formData = new FormData();
+      
+      // Form verilerini JSON olarak ekle
+      formData.append("request", new Blob([JSON.stringify({
+        name,
+        description,
+        taxNumber,
+        phoneNumber,
+        email,
+        website,
+        subscriptionPlanStatus,
+        address: addressAll,
+      })], {
+        type: "application/json",
+      }));
+      
+      // Logoyu ekle
+      if (logo) {
+        formData.append("logoFile", logo);
+      }
+
       const response = await axios.post(
         `http://localhost:8085/api/v1/company`,
-        {
-          name,
-          description,
-          taxNumber,
-          phoneNumber,
-          email,
-          website,
-          subscriptionPlanStatus,
-          address: addressAll, // Doğrudan addressAll objesini gönderiyoruz
-        },
+        formData,
         {
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${accessToken}`
           },
         }

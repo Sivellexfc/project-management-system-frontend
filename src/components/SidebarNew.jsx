@@ -52,7 +52,7 @@ const SidebarNew = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const result = await fetchData("3"); // Backend'den veri çekme
+        const result = await fetchData(Cookies.get("selectedCompanyId")); // Backend'den veri çekme
         setData(result.result);
         console.log(result);
       } catch (error) {

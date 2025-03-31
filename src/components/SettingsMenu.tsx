@@ -27,6 +27,7 @@ export const SettingsMenu = () => {
 
   const handleLogout = () => {
     Cookies.remove("accessToken");
+    Cookies.remove("selectedCompanyId");
     localStorage.removeItem("selectedCompany");
     
     navigate("/home");
