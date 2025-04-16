@@ -16,6 +16,7 @@ import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { BiTrash } from "react-icons/bi";
 import { alignProperty } from "@mui/material/styles/cssUtils";
 import RemoveUser from "./components/RemoveUser";
+import Cookies from "js-cookie"
 
 const columns = [
   { id: "avatar", label: "Avatar", minWidth: 100 },
@@ -37,7 +38,7 @@ export default function CompanyEmployees() {
       const getData = async () => {
         console.log("başlıyor ,")
         try {
-          const result = await fetchData("3"); // Backend'den veri çekme
+          const result = await fetchData(Cookies.get("selectedCompanyId")); // Backend'den veri çekme
 
           console.log(result)
           console.log("data : ", datas)

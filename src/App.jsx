@@ -33,6 +33,7 @@ import UserAddCompanyDirection from "./pages/UserAddCompanyDirection.jsx";
 import SelectAccountType from "./components/Login/SelectAccountType.jsx";
 import AnnouncementDetail from "./components/AnnouncementDetail.jsx";
 import CreateAnnouncement from "./components/CreateAnnouncement.jsx";
+import ProtectedRoutes from "./Context/ProtectedRoutes.tsx";
 
 const ProtectedRoute = ({ children }) => {
   const accessTokenn = useSelector((state) => state.auth.accessToken);
@@ -51,13 +52,12 @@ const RestrictWhenLoggenInRoutes = ({ children }) => {
 
   if (accessToken) {
     if (!selectedCompany) {
-      return <Navigate to="/selectCompany" replace />;  // Şirket seçilmediyse yönlendir
+      return <Navigate to="/selectCompany" replace />; // Şirket seçilmediyse yönlendir
     }
-    return <Navigate to="/dashboard" replace />;  // Şirket seçildiyse dashboard'a gönder
+    return <Navigate to="/dashboard" replace />; // Şirket seçildiyse dashboard'a gönder
   }
   return children;
 };
-
 
 const App = () => {
   const theme = createTheme({
@@ -83,12 +83,18 @@ const App = () => {
             <Route path="/calendar" element={<Calender />} />
             <Route path="/announcement" element={<Announcement />} />
             <Route path="/announcement/:id" element={<AnnouncementDetail />} />
-            <Route path="/announcement/create" element={<CreateAnnouncement />} />
+            <Route
+              path="/announcement/create"
+              element={<CreateAnnouncement />}
+            />
             <Route path="/projectDetails" element={<ProjectDetails />} />
             <Route path="/company" element={<CompanySettings />} />
             <Route path="/help" element={<Help />} />
             <Route path="/issues" element={<KanbanBoard />} />
-            <Route path="/project/kanbanBoard/:projectId" element={<KanbanBoard />} />
+            <Route
+              path="/project/kanbanBoard/:projectId"
+              element={<KanbanBoard />}
+            />
           </Route>
           {/* Login rotası */}
           <Route path="/" element={<Navigate to={"/home"} />} />
@@ -103,7 +109,18 @@ const App = () => {
           <Route path="/auth/verify" element={<VerifyEmail />} />
           <Route path="/invite" element={<InvitedUserPage />} />
           <Route path="/selectType" element={<SelectAccountType />} />
-          <Route path="/selectCompany" element={<SelectCompany />}></Route>
+
+          <Route path="/selectCompan" element={<SelectCompany />}></Route>
+
+          <Route
+            path="/selectCompany"
+            element={
+              <ProtectedRoutes requiredPermission="company:create">
+                <SelectCompany />
+              </ProtectedRoutes>
+            }
+          />
+
           <Route
             path="/login"
             element={
@@ -135,13 +152,7 @@ const App = () => {
           />
           <Route path="/subscription" element={<SubscriptionPage />} />
 
-          <Route
-            path="/newCompany"
-            element={
-                <CreateCompany />
-            }
-          />
-          
+          <Route path="/newCompany" element={<CreateCompany />} />
         </Routes>
       </AuthProvider>
     </ThemeProvider>

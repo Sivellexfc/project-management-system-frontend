@@ -40,8 +40,7 @@ const Login = () => {
       if (role === 'ADMIN' || role === 'COMPANY_OWNER') {
         navigate('/selectCompany');
       } else {
-        console.log(role)
-        console.log(response.data);
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Giriş hatası:', error);
