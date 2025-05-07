@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import { setAuth } from "../app/features/authSlice";
 import api from "../services/api";
@@ -17,12 +17,12 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl');
 
   const handleLogin = async (event) => {
-
     event.preventDefault();
     try {
-      // const response = await api.post('/auth/login', { email, password });
       const response = await axios.post(
         `http://localhost:8085/api/v1/auth/login`,
         { email, password },
@@ -37,7 +37,10 @@ const Login = () => {
       const decodedToken = jwtDecode(accessToken);
       const role = decodedToken.userRole;
       
-      if (role === 'ADMIN' || role === 'COMPANY_OWNER') {
+      // Eğer returnUrl varsa, o sayfaya yönlendir
+      if (returnUrl) {
+        navigate(returnUrl);
+      } else if (role === 'ADMIN' || role === 'COMPANY_OWNER') {
         navigate('/selectCompany');
       } else {
         navigate('/dashboard');

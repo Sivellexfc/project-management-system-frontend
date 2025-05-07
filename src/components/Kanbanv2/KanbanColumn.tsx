@@ -51,8 +51,8 @@ function KanbanColumn(props: Props) {
     <div
       ref={setNodeRef}
       style={style}
-      className="flex-1 h-[600px] flex flex-col 
-      rounded-md items-center justify-between space-y-2"
+      className="flex-1 h-[700px] flex flex-col 
+      rounded-md items-center justify-between"
     >
       <div className="w-full flex justify-start h-10 items-center">
         <div
@@ -71,8 +71,8 @@ function KanbanColumn(props: Props) {
           +
         </button>
       </div>
-      <div className="space-y-2 w-full flex flex-col flex-grow overflow-x-auto overflow-y-visible">
-        <SortableContext items={tasksId}>
+      <div className="mt-5 w-full flex-1 overflow-y-auto overflow-x-hidden space-y-2">
+      <SortableContext items={tasksId}>
           {tasks.map((task) => (
             <TaskCard key={task.id} task={task}></TaskCard>
           ))}

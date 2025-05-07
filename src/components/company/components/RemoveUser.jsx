@@ -3,46 +3,66 @@ import { inviteUserToCompany } from "../../../services/companyServices/InviteEmp
 import Cookies from "js-cookie";
 import { MdWarning } from "react-icons/md";
 import { RemoveUserFromCompany } from "../../../services/companyServices/RemoveUser";
+import { FaTimes } from "react-icons/fa";
 
-const RemoveUser = ({ closeRemoveMemberModal,userId }) => {
-
+const RemoveUser = ({ closeRemoveMemberModal, userId }) => {
   const handleRemove = async (e) => {
+    try {
+      const selectedCompanyId = Cookies.get("selectedCompanyId");
       
-      try {
-        const selectedCompanyId = Cookies.get("selectedCompanyId")
-        
-        console.log("userId : "+userId);
-        console.log("selectedCompanyId : "+selectedCompanyId);
+      console.log("userId : " + userId);
+      console.log("selectedCompanyId : " + selectedCompanyId);
 
-        const response = await RemoveUserFromCompany(userId,selectedCompanyId);
+      const response = await RemoveUserFromCompany(userId, selectedCompanyId);
 
-        console.log(response)
-        if (response.isSuccess) {
-          // Başarı durumu
-          alert("Kullanıcı başarıyla şirketten çıkartıldı.");
-          closeRemoveMemberModal(); // Modal'ı kapat
-        } else {
-          // Hata durumu
-          alert("Kullanıcı çıkartılırken bir sorunla karşılaşıldı");
-        }
-      } catch (error) {
-        console.error("Hata:", error);
-        alert(`Hata oluştu: ${error.response?.data?.message || error.message}`);
+      console.log(response);
+      if (response.isSuccess) {
+        alert("Kullanıcı başarıyla şirketten çıkartıldı.");
+        closeRemoveMemberModal();
+      } else {
+        alert("Kullanıcı çıkartılırken bir sorunla karşılaşıldı");
       }
-    };
+    } catch (error) {
+      console.error("Hata:", error);
+      alert(`Hata oluştu: ${error.response?.data?.message || error.message}`);
+    }
+  };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-black/40 z-50">
-      <div className="bg-white p-8 rounded-md shadow-lg w-1/3">
-        <h2 className="text-xl font-medium mb-4">Kullanıcıyı çıkart</h2>
-        <div className="p-4 w-full gap-4 bg-red-400 bg-opacity-25 border border-red-600 text-red-700 flex items-center justify-between">
-          <MdWarning size={40} color="red"></MdWarning>
-          <span className="text-sm font-semibold">Bu kullanıcıyı şirketten çıkartmak istediğinize emin misiniz? Bu işlem geri alınamaz.</span>
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+      <div className="bg-white p-6 rounded-xl shadow-xl w-[500px]">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-800">Kullanıcıyı şirketten çıkart</h2>
+          <button
+            onClick={closeRemoveMemberModal}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <FaTimes size={24} />
+          </button>
         </div>
-        <div></div>
-        <div>
-          <button onClick={() => {handleRemove()}} className="py-2 px-4 rounded-sm bg-red-300 text-white">Çıkart</button>
-          <button onClick={closeRemoveMemberModal} className="py-2 px-4 rounded-sm bg-gray-100 text-primary">İptal</button>
+
+        <div className="bg-red-50 p-4 rounded-lg border border-red-200 mb-6">
+          <div className="flex items-center gap-4">
+            <MdWarning size={32} className="text-red-500" />
+            <p className="text-red-700 font-medium">
+              Bu kullanıcıyı şirketten çıkartmak istediğinize emin misiniz? Bu işlem geri alınamaz.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={closeRemoveMemberModal}
+            className="px-4 py-2 rounded-lg font-light border border-borderColor text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            İptal
+          </button>
+          <button
+            onClick={handleRemove}
+            className="px-4 py-2 rounded-lg font-light bg-red-500 text-white hover:bg-red-600 transition-colors"
+          >
+            Çıkart
+          </button>
         </div>
       </div>
     </div>

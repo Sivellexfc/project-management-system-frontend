@@ -18,16 +18,17 @@ const AnnouncementDetail = () => {
   const fetchAnnouncementDetail = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8085/api/v1/announcements/${id}`,
+        `http://localhost:8085/api/v1/announcements/company/${id}`,
         {
           headers: {
-            Authorization: `Bearer ${Cookies.get("token")}`,
+            Authorization: `Bearer ${Cookies.get("accessToken")}`,
           },
         }
       );
-
+      console.log("response : ",response)
       if (response.data.isSuccess) {
         setAnnouncement(response.data.result);
+        console.log("announcement : " ,announcement)
       } else {
         setError("Duyuru detayları yüklenirken bir hata oluştu.");
       }

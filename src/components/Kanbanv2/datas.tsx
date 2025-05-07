@@ -20,16 +20,6 @@ export const columns: Column[] = [
         id: 4,
         title: "Completed",
         color: "#72DE4E"
-    },
-    {
-        id: 5,
-        title: "Blocked",
-        color: "#72DE4E"
-    },
-    {
-        id: 6,
-        title: "Blocked",
-        color: "#72DE4E"
     }
 
 ];

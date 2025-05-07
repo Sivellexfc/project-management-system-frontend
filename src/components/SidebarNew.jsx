@@ -54,7 +54,7 @@ const SidebarNew = () => {
       try {
         const result = await fetchData(Cookies.get("selectedCompanyId")); // Backend'den veri çekme
         setData(result.result);
-        console.log(result);
+        
       } catch (error) {
         console.error("Veri çekme başarısız:", error);
       }
@@ -72,7 +72,7 @@ const SidebarNew = () => {
     },
     {
       name: "Yapılacaklar",
-      path: "/issues",
+      path: "/todo",
       roles: ["USER", "ADMIN", "COMPANY_OWNER"],
       icon: <FaTasks />,
     },
@@ -117,8 +117,6 @@ const SidebarNew = () => {
   const accessToken = Cookies.get("accessToken");
   const userinfos = jwtDecode(accessToken);
 
-  console.log(userinfos);
-
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const selectedCompany = JSON.parse(
@@ -149,11 +147,16 @@ const SidebarNew = () => {
             className={`${
               isCollapsed
                 ? "p-4 pb-2 flex justify-center"
-                : "p-4 pb-2 flex justify-end"
+                : "p-4 pb-2 flex justify-between items-center"
             }`}
           >
+            <div className={`${
+              isCollapsed
+                ? "hidden"
+                : "font-bold text-2xl text-[#38b6ff]"
+            }`}>workden</div>
             <button onClick={toggleSidebar}>
-              <BiMenu size={30} />
+              <BiMenu size={20} />
             </button>
           </div>
 

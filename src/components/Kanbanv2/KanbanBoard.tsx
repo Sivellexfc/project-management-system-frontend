@@ -36,8 +36,15 @@ const KanbanBoard = ({}) => {
         // ID değerlerini string'e dönüştürerek setTasks ile güncelleme
         const updatedTasks = response.result.map((task) => ({
           ...task,
-          id: String(task.id), // ID'yi string'e çevir
+          id: String(task.id),
+          groupId: task.group?.id,
+          subGroupId: task.subGroup?.id,
+          labelId: task.label?.id,
+          priorityId: task.priority?.id,
+          stageId: task.stage?.id,
         }));
+        
+        console.log(updatedTasks)
       
         setTasks((prevTasks) => [...prevTasks, ...updatedTasks]);
       }

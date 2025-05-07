@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FaCross, FaFlag, FaPlus, FaTrash, FaXbox } from "react-icons/fa";
+import { FaCross, FaFlag, FaPlus, FaTrash, FaXbox, FaSearch } from "react-icons/fa";
 import { IoMdAlert } from "react-icons/io";
 import { MdLowPriority } from "react-icons/md";
 import Cookies from "js-cookie";
@@ -13,6 +13,16 @@ import { RxCross1 } from "react-icons/rx";
 
 interface Props {
   onClose: () => void;
+}
+
+interface Group {
+  id: number;
+  name: string;
+}
+
+interface SubGroup {
+  id: number;
+  name: string;
 }
 
 const STAGES = [
@@ -37,21 +47,93 @@ const TaskModal: React.FC<Props> = ({ onClose }) => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [priority, setPriority] = useState<1 | 2 | 3 | 4>(2);
   const [selectedLabel, setSelectedLabel] = useState<number>(1);
-  const [group, setGroup] = useState("");
-  const [groups, setGroups] = useState<string[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [selectedSubGroup, setSelectedSubGroup] = useState<SubGroup | null>(null);
+  const [availableGroups, setAvailableGroups] = useState<Group[]>([]);
+  const [availableSubGroups, setAvailableSubGroups] = useState<SubGroup[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [stage, setStage] = useState(STAGES[0].id);
   const [steps, setSteps] = useState<{ id: number; description: string }[]>([]);
   const [newStep, setNewStep] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSubGroupDropdownOpen, setIsSubGroupDropdownOpen] = useState(false);
+  const [isSubGroupsLoading, setIsSubGroupsLoading] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const subGroupDropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleAddGroup = () => {
-    if (group.trim() && !groups.includes(group.trim())) {
-      setGroups([...groups, group.trim()]);
-      setGroup("");
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        setIsLoading(true);
+        const selectedCompanyId = Cookies.get("selectedCompanyId");
+        const response = await axios.get(
+          `http://localhost:8085/api/v1/company/${selectedCompanyId}/group/project/${projectId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${Cookies.get("accessToken")}`,
+            },
+          }
+        );
+        setAvailableGroups(response.data.result || []);
+      } catch (error) {
+        console.error("Grup verileri çekilirken hata oluştu:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, [projectId]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+      if (subGroupDropdownRef.current && !subGroupDropdownRef.current.contains(event.target as Node)) {
+        setIsSubGroupDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const filteredGroups = availableGroups.filter((group) =>
+    group.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleGroupSelect = async (group: Group) => {
+    setSelectedGroup(group);
+    setSelectedSubGroup(null);
+    setIsDropdownOpen(false);
+    setIsSubGroupsLoading(true);
+
+    try {
+      const selectedCompanyId = Cookies.get("selectedCompanyId");
+      const response = await axios.get(
+        `http://localhost:8085/api/v1/company/${selectedCompanyId}/group/${group.id}/subgroup`,
+        {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("accessToken")}`,
+          },
+        }
+      );
+      setAvailableSubGroups(response.data.result || []);
+    } catch (error) {
+      console.error("Alt grup verileri çekilirken hata oluştu:", error);
+      setAvailableSubGroups([]);
+    } finally {
+      setIsSubGroupsLoading(false);
     }
   };
 
-  const handleRemoveGroup = (groupToRemove: string) => {
-    setGroups(groups.filter((g) => g !== groupToRemove));
+  const handleSubGroupSelect = (subGroup: SubGroup) => {
+    setSelectedSubGroup(subGroup);
+    setIsSubGroupDropdownOpen(false);
   };
 
   const handleAddStep = () => {
@@ -82,6 +164,10 @@ const TaskModal: React.FC<Props> = ({ onClose }) => {
       return;
     }
 
+    console.log("selectedGroup : ",selectedGroup)
+    console.log("selectedSubGroup : ",selectedSubGroup)
+
+
     try {
       // Önce task'i oluştur
       const response = await createIssue(
@@ -90,21 +176,24 @@ const TaskModal: React.FC<Props> = ({ onClose }) => {
         description,
         startDate.toISOString(),
         endDate.toISOString(),
+        selectedGroup?.id || 0,
+        selectedSubGroup?.id || 0,
         stage,
         projectId,
         priority,
         selectedLabel
       );
+      console.log(response)
 
       if (response.isSuccess) {
         // Task başarıyla oluşturulduysa, stepleri ekle
-        const taskId = response.result.id;
+        const taskId = response.result;
         const accessToken = Cookies.get('accessToken');
 
         // Her bir step için ayrı POST isteği gönder
         for (const step of steps) {
           await axios.post(
-            `http://localhost:8085/api/v1/issue/${taskId}/steps`,
+            `http://localhost:8085/api/v1/issues/${taskId}/steps`,
             {
               description: step.description,
               isDone: false
@@ -263,43 +352,107 @@ const TaskModal: React.FC<Props> = ({ onClose }) => {
           {/* Sağ Kolon */}
           <div className="space-y-6">
             {/* Gruplar */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Çalışma Grupları</label>
-              <div className="flex gap-2 mb-2">
+            <div ref={dropdownRef}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Çalışma Grubu</label>
+              <div className="relative mb-2">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Yeni grup"
-                  className="flex-1 w-full text-md border p-2 focus:border-gray-200 border-borderColor rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
-                  value={group}
-                  onChange={(e) => setGroup(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleAddGroup()}
+                  placeholder="Grup ara..."
+                  className="w-full pl-10 pr-4 py-2 border border-borderColor rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setIsDropdownOpen(true);
+                  }}
+                  onFocus={() => setIsDropdownOpen(true)}
                 />
-                <button
-                  type="button"
-                  onClick={handleAddGroup}
-                  className="px-4 py-2 bg-colorFirst border border-borderColor text-primary rounded-lg hover:bg-colorSecond transition-colors flex items-center gap-2"
-                >
-                  <FaPlus size={16} />
-                  Ekle
-                </button>
+                {isDropdownOpen && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {isLoading ? (
+                      <div className="text-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto"></div>
+                      </div>
+                    ) : filteredGroups.length > 0 ? (
+                      filteredGroups.map((group) => (
+                        <div
+                          key={group.id}
+                          className="flex items-center justify-between p-2 hover:bg-gray-50 cursor-pointer"
+                          onClick={() => handleGroupSelect(group)}
+                        >
+                          <span className="text-gray-700">{group.name}</span>
+                          <FaPlus className="text-gray-400 hover:text-gray-600" />
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-gray-500">
+                        {searchQuery ? "Sonuç bulunamadı" : "Grup bulunamadı"}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {groups.map((group) => (
-                  <span
-                    key={group}
-                    className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                  >
-                    {group}
+
+              {/* Seçilen Grup */}
+              {selectedGroup && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+                    <span>{selectedGroup.name}</span>
                     <button
                       type="button"
-                      onClick={() => handleRemoveGroup(group)}
+                      onClick={() => {
+                        setSelectedGroup(null);
+                        setSelectedSubGroup(null);
+                        setAvailableSubGroups([]);
+                      }}
                       className="text-purple-600 hover:text-purple-800"
                     >
-                      ×
+                      <FaTrash size={12} />
                     </button>
-                  </span>
-                ))}
-              </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Alt Gruplar */}
+              {selectedGroup && (
+                <div ref={subGroupDropdownRef} className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Alt Grup</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Alt grup seç..."
+                      className="w-full pl-3 pr-4 py-2 border border-borderColor rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onClick={() => setIsSubGroupDropdownOpen(true)}
+                      value={selectedSubGroup?.name || ""}
+                      readOnly
+                    />
+                    {isSubGroupDropdownOpen && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {isSubGroupsLoading ? (
+                          <div className="text-center py-4">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto"></div>
+                          </div>
+                        ) : availableSubGroups.length > 0 ? (
+                          availableSubGroups.map((subGroup) => (
+                            <div
+                              key={subGroup.id}
+                              className="flex items-center justify-between p-2 hover:bg-gray-50 cursor-pointer"
+                              onClick={() => handleSubGroupSelect(subGroup)}
+                            >
+                              <span className="text-gray-700">{subGroup.name}</span>
+                              <FaPlus className="text-gray-400 hover:text-gray-600" />
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-4 text-gray-500">
+                            Alt grup bulunamadı
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Stepler */}
@@ -348,7 +501,7 @@ const TaskModal: React.FC<Props> = ({ onClose }) => {
         <div className="mt-6 flex justify-end gap-4">
           <button
             type="button"
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+            className="px-4 py-2 bg-colorFirst border border-borderColor text-primary rounded-md hover:bg-blue-600 transition-colors"
             onClick={handleSubmit}
           >
             Kaydet

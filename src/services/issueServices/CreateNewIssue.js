@@ -3,7 +3,19 @@ import Cookies from "js-cookie";
 
 const API_URL = "http://localhost:8085/api/v1/company"; // API URL'yi kendi API adresinle değiştir
 
-export const createIssue = async (companyId,name,description,startDate,deadLineDate,stageId,projectId,priorityId,labelId) => {
+export const createIssue = async (
+  companyId,
+  name,
+  description,
+  startDate,
+  deadLineDate,
+  selectedGroup,
+  selectedSubGroup,
+  stageId,
+  projectId,
+  priorityId,
+  labelId
+) => {
   try {
     const token = Cookies.get("accessToken");
     if (!token) {
@@ -14,12 +26,14 @@ export const createIssue = async (companyId,name,description,startDate,deadLineD
       {
         name: name,
         explanation: description,
-        startDate:startDate,
-        deadLineDate:deadLineDate,
-        stageId:stageId,
-        projectId:projectId,
-        priorityId:priorityId,
-        labelId:labelId
+        startDate: startDate,
+        deadLineDate: deadLineDate,
+        groupId: selectedGroup,
+        subGroupId: selectedSubGroup,
+        stageId: stageId,
+        projectId: projectId,
+        priorityId: priorityId,
+        labelId: labelId,
       },
       {
         headers: {

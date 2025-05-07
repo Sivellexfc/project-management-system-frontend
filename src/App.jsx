@@ -9,8 +9,6 @@ import {
 import Layout from "./components/Layout";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
-import Reports from "./components/Reports";
-import Calender from "./components/Calender";
 import Announcement from "./pages/Anouncement";
 import ProjectDetails from "./components/ProjectDetails";
 import Help from "./components/Help";
@@ -21,6 +19,7 @@ import HomePage from "./pages/HomePage.jsx";
 import { useSelector } from "react-redux";
 import Cookies from "js-cookie";
 import { DashBoard } from "./components/DashBoard.jsx";
+import  Calender  from "./components/Calender.jsx";
 import { Verification } from "./pages/Verification.jsx";
 import VerifyEmail from "./services/VerifyEmail.jsx";
 import KanbanBoard from "./components/Kanbanv2/KanbanBoard.tsx";
@@ -34,6 +33,10 @@ import SelectAccountType from "./components/Login/SelectAccountType.jsx";
 import AnnouncementDetail from "./components/AnnouncementDetail.jsx";
 import CreateAnnouncement from "./components/CreateAnnouncement.jsx";
 import ProtectedRoutes from "./Context/ProtectedRoutes.tsx";
+import Reports from "./pages/Reports.jsx";
+import Todo from "./pages/Todo.jsx";
+import { CalendarContainer } from "react-datepicker";
+import InviteProjectPage from './pages/InviteProjectPage';
 
 const ProtectedRoute = ({ children }) => {
   const accessTokenn = useSelector((state) => state.auth.accessToken);
@@ -80,8 +83,9 @@ const App = () => {
           >
             <Route path="/dashboard" element={<DashBoard />} />
             <Route path="/reports" element={<Reports />} />
-            <Route path="/calendar" element={<Calender />} />
+            <Route path="/calendar" element={<Calender/>} />
             <Route path="/announcement" element={<Announcement />} />
+            <Route path="/todo" element={<Todo />} />
             <Route path="/announcement/:id" element={<AnnouncementDetail />} />
             <Route
               path="/announcement/create"
@@ -107,10 +111,12 @@ const App = () => {
             }
           />
           <Route path="/auth/verify" element={<VerifyEmail />} />
-          <Route path="/invite" element={<InvitedUserPage />} />
+          <Route path="/invite-company" element={<InvitedUserPage />} />
+          <Route path="/invite-project" element={<InviteProjectPage />} />
+          
           <Route path="/selectType" element={<SelectAccountType />} />
 
-          <Route path="/selectCompan" element={<SelectCompany />}></Route>
+          <Route path="/selectCompany" element={<SelectCompany />}></Route>
 
           <Route
             path="/selectCompany"

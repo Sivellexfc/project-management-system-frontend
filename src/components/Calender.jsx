@@ -1,7 +1,9 @@
-import React from "react";
+import React from 'react'
 
 const Calender = () => {
-  return <div>Calender</div>;
-};
+  return (
+    <div>Calender</div>
+  )
+}
 
-export default Calender;
+export default Calender

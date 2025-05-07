@@ -25,23 +25,22 @@ const Anouncement = () => {
   const fetchAnnouncements = async () => {
     try {
       // API çağrısı şu an için yorum satırında
-      /*
       const companyId = Cookies.get("selectedCompanyId");
+
       const response = await axios.get(
         `http://localhost:8085/api/v1/announcements/company/${companyId}`,
         {
           headers: {
-            Authorization: `Bearer ${Cookies.get("token")}`,
+            Authorization: `Bearer ${Cookies.get("accessToken")}`,
           },
         }
       );
-
+      console.log("response : ", response)
       if (response.data.isSuccess) {
         setAnnouncements(response.data.result);
       } else {
         setError("Duyurular yüklenirken bir hata oluştu.");
       }
-      */
 
       // Örnek veri
       const mockData = [
@@ -76,8 +75,7 @@ const Anouncement = () => {
           createdBy: "Ayşe Kaya"
         }
       ];
-
-      setAnnouncements(mockData);
+      console.log(response.data)
       setLoading(false);
     } catch (err) {
       setError("Duyurular yüklenirken bir hata oluştu.");

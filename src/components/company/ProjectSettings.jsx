@@ -7,37 +7,48 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import Button from "@mui/material/Button";
 import { useEffect } from "react";
 import CreateNewProject from "./components/CreateNewProjectModal";
+import EditProjectModal from "./components/EditProjectModal";
 import { useState } from "react";
 import { fetchData } from "../../services/projectServices/GetProjects";
 import Cookies from "js-cookie";
+import { BiPen } from "react-icons/bi";
+import { FaPen } from "react-icons/fa";
 
 const columns = [
-  { id: "name", label: "Name", minWidth: 170 },
-  { id: "startDate", label: "Start Date", minWidth: 170 },
-  { id: "group", label: "Group", minWidth: 170 },
-  { id: "subgroup", label: "Sub-group", minWidth: 170 },
-  { id: "action", label: "Actions", minWidth: 170 },
+  { id: "photo", label: "", minWidth: 0 },
+  { id: "name", label: "Name", minWidth: 150 },
+  { id: "description", label: "Description", minWidth: 150 },
+  { id: "projectStatus", label: "Status", minWidth: 150 },
+  { id: "startDate", label: "Start Date", minWidth: 150 },
+  { id: "endDate", label: "End Date", minWidth: 150 },
+  { id: "action", label: "Actions", minWidth: 150, align: "center" },
 ];
 
-function createData(name, startDate, group, subgroup, action) {
-  return { name, startDate, group, subgroup, action };
+function createData(id,name, description,projectStatus,startDate,endDate,  action,photo) {
+  return {id,name,description,projectStatus, startDate,endDate, action, photo };
 }
 
 export default function ProjectSettings() {
   const [data, setData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+  const openEditModal = (project) => {
+    setSelectedProject(project);
+    setIsEditModalOpen(true);
+  };
+  const closeEditModal = () => setIsEditModalOpen(false);
 
   useEffect(() => {
     const getData = async () => {
       try {
         const result = await fetchData(Cookies.get("selectedCompanyId")); // Backend'den veri çekme
-        console.log(result);
+        console.log("result ::::: ",result);
         setData(result.result);
         console.log(result);
       } catch (error) {
@@ -61,8 +72,7 @@ export default function ProjectSettings() {
   };
 
   const handleEditClick = (row) => {
-    // Düzenleme işlemi
-    console.log("Editing", row);
+    openEditModal(row);
   };
 
   // Verinin null veya undefined olup olmadığını kontrol ediyoruz
@@ -70,11 +80,14 @@ export default function ProjectSettings() {
     data && Array.isArray(data)
       ? data.map((item) =>
           createData(
+            item.id,
             item.name,
+            item.description,
+            item.projectStatus,
             item.startDate,
-            item.group,
-            item.subgroup,
-            item.action
+            item.endDate,
+            item.action,
+            item.photo
           )
         )
       : [];
@@ -91,6 +104,12 @@ export default function ProjectSettings() {
         </button>
         {isModalOpen && (
           <CreateNewProject closeModal={closeModal}></CreateNewProject>
+        )}
+        {isEditModalOpen && selectedProject && (
+          <EditProjectModal
+            closeModal={closeEditModal}
+            project={selectedProject}
+          />
         )}
       </div>
       <Paper
@@ -119,7 +138,7 @@ export default function ProjectSettings() {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => (
                     <TableRow
-                      hover
+                      
                       role="checkbox"
                       tabIndex={-1}
                       key={row.name}
@@ -127,14 +146,29 @@ export default function ProjectSettings() {
                       {columns.map((column) => {
                         const value = row[column.id];
                         return (
-                          <TableCell key={column.id} align={column.align}>
+                          <TableCell key={column.id} align={column.align} style={
+                            column.id === "photo"
+                              ? { width: 60, padding: "0 8px" }
+                              : { minWidth: column.minWidth }
+                          }>
                             {column.id === "action" ? (
-                              <Button
+                              <button
                                 onClick={() => handleEditClick(row)}
-                                variant="outlined"
+                                className="p-2  bg-borderColor text-primary rounded-lg hover:bg-gray-200"
                               >
-                                Düzenle
-                              </Button>
+                                <FaPen></FaPen>
+                              </button>
+                            ) : column.id === "photo" ? (
+                              <img
+                                src={value}
+                                alt="Avatar"
+                                className="border border-borderColor"
+                                style={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius: "15%",
+                                }}
+                              />
                             ) : (
                               value
                             )}

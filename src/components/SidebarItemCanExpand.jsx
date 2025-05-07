@@ -45,7 +45,7 @@ const SidebarItemCanExpand = ({
       {isExpanded && !isCollapsed && (
         <ul className="ml-4">
           {subItems.map((subItem, index) => (
-            <NavLink to={subItem.path}>
+            <NavLink key={index} to={subItem.path}>
               <li
               key={index}
               className="flex items-center py-2 px-3 my-1 font-normal rounded-md cursor-pointer 

@@ -53,14 +53,25 @@ const CreateAnnouncement = () => {
 
     try {
       const companyId = Cookies.get("selectedCompanyId");
+      
       const formDataToSend = new FormData();
-      formDataToSend.append("companyId", companyId);
-      formDataToSend.append("title", formData.title);
-      formDataToSend.append("content", formData.content);
-      formDataToSend.append("validUntil", formData.validUntil);
-      formDataToSend.append("isActive", formData.isActive);
+
+      // Burada 'request' adında bir JSON blob gönderiyorsun
+      const requestPayload = {
+        companyId: companyId,
+        title: formData.title,
+        content: formData.content,
+        validUntil: new Date(formData.validUntil).toISOString(),
+        isActive: formData.isActive,
+      };
+
+      formDataToSend.append(
+        "request",
+        new Blob([JSON.stringify(requestPayload)], { type: "application/json" })
+      );
+
       if (formData.image) {
-        formDataToSend.append("image", formData.image);
+        formDataToSend.append("photo", formData.image);
       }
 
       const response = await axios.post(
@@ -69,7 +80,7 @@ const CreateAnnouncement = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${Cookies.get("token")}`,
+            Authorization: `Bearer ${Cookies.get("accessToken")}`,
           },
         }
       );
@@ -77,10 +88,14 @@ const CreateAnnouncement = () => {
       if (response.data.isSuccess) {
         navigate("/announcement");
       } else {
-        setError(response.data.message || "Duyuru oluşturulurken bir hata oluştu.");
+        setError(
+          response.data.message || "Duyuru oluşturulurken bir hata oluştu."
+        );
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Duyuru oluşturulurken bir hata oluştu.");
+      setError(
+        err.response?.data?.message || "Duyuru oluşturulurken bir hata oluştu."
+      );
     } finally {
       setLoading(false);
     }
@@ -97,7 +112,9 @@ const CreateAnnouncement = () => {
       </button>
 
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Yeni Duyuru Oluştur</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-8">
+          Yeni Duyuru Oluştur
+        </h1>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
@@ -182,9 +199,7 @@ const CreateAnnouncement = () => {
                   </label>
                   <p className="pl-1">veya sürükleyip bırakın</p>
                 </div>
-                <p className="text-xs text-gray-500">
-                  PNG, JPG, GIF max 5MB
-                </p>
+                <p className="text-xs text-gray-500">PNG, JPG, GIF max 5MB</p>
               </div>
             </div>
           </div>
@@ -197,9 +212,7 @@ const CreateAnnouncement = () => {
               onChange={handleInputChange}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label className="ml-2 block text-sm text-gray-900">
-              Aktif
-            </label>
+            <label className="ml-2 block text-sm text-gray-900">Aktif</label>
           </div>
 
           <div className="flex justify-end gap-4">
