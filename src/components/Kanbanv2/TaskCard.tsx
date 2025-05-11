@@ -6,6 +6,8 @@ import KanbanCardLabel from "./KanbanCardLabel";
 import { FaInfoCircle } from "react-icons/fa";
 import IssueDetailCard from "./IssueDetailCard";
 import { createPortal } from "react-dom";
+import PRIORITY from "../utils/Priority";
+import LABELS from "../utils/Labels";
 
 interface Props {
   task: Task;
@@ -28,7 +30,7 @@ const LABEL_INFO = {
 
 function TaskCard({ task }: Props) {
   const [showDetail, setShowDetail] = useState(false);
-
+  console.log("task : ", task);
   useEffect(() => {
     setShowDetail(false);
   }, [task]); // Task değiştikçe detay kapanacak
@@ -53,14 +55,17 @@ function TaskCard({ task }: Props) {
     transition,
     transform: CSS.Transform.toString(transform),
   };
-
+  console.log("task.labelId : ", task.labelId)
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      {...(showDetail ? {} : attributes)} // Modal açıkken attributes'leri kaldır
-        {...(showDetail ? {} : listeners)}  // Modal açıkken listeners'leri kaldır
-      className="w-full px-4 py-2 space-y-2 bg-colorFirst border-l-[5px]  border-l-[#EED12B] border-t border-r border-b border-borderColor rounded-md hover:shadow-md cursor-grab"
+      style={{
+        ...style,
+        borderLeft: `6px solid ${PRIORITY[task.priorityId]?.color || '#ccc'}`
+      }}
+      {...(showDetail ? {} : attributes)}
+      {...(showDetail ? {} : listeners)}
+      className="w-full px-4 py-2 space-y-2 bg-colorFirst border-t border-r border-b border-borderColor rounded-md hover:shadow-md cursor-grab"
     >
       <div className="flex justify-between">
         <h2 className="font-primary text-lg font-normal">{task.name}</h2>
@@ -73,13 +78,12 @@ function TaskCard({ task }: Props) {
           }}
           className="text-gray-500 hover:text-gray-700 p-1"
         >
-          <FaInfoCircle size={20} />
+          <FaInfoCircle size={20} className="opacity-40"/>
         </button>
       </div>
       <div className="space-y-2">
         <div>
-          <KanbanCardLabel color="#27C356" text="Design"></KanbanCardLabel>
-          <KanbanCardLabel color="#2766C3" text="Plan"></KanbanCardLabel>
+          <KanbanCardLabel color={LABELS.find(l => l.id === task.labelId)?.color} text={LABELS.find(l => l.id === task.labelId)?.name}></KanbanCardLabel>
         </div>
         <p className="font-primary text-sm font-light">{task.explanation}</p>
       </div>

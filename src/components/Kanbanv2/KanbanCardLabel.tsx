@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface ColorLabelProps {
-  text: string;
-  color: string; // Burada, renk istenilen şekilde değiştirilebilir (hex, rgb, tailwind renk sınıfı vb.)
+  text?: string;
+  color?: string; // Burada, renk istenilen şekilde değiştirilebilir (hex, rgb, tailwind renk sınıfı vb.)
 }
 
 const KanbanCardLabel: React.FC<ColorLabelProps> = ({ text, color }) => {

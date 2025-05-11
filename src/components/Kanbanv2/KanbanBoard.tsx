@@ -65,7 +65,7 @@ const KanbanBoard = ({}) => {
 
 
   return (
-    <div className="w-full space-y-10">
+    <div className="w-full space-y-4">
       <div>
         <h1 className="font-primary text-3xl font-semibold">Kanban Board</h1>
         <h1 className="font-primary text-2xl font-light">

@@ -10,7 +10,6 @@ import TableRow from "@mui/material/TableRow";
 import Button from "@mui/material/Button";
 import { useEffect } from "react";
 import { useState } from "react";
-import { getSubGroups } from "../../../services/groupServices/GetSubGroups";
 import { getGroupMembers } from "../../../services/groupServices/GetGroupMembers";
 import Cookies from 'js-cookie';
 

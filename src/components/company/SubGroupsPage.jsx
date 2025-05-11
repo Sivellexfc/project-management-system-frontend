@@ -10,10 +10,9 @@ import TableRow from "@mui/material/TableRow";
 import Button from "@mui/material/Button";
 import { useEffect } from "react";
 import { fetchData } from "../../services/companyServices/GetCompanyEmployees";
-import { getSubGroups } from "../../services/groupServices/GetSubGroups";
 import CreateSubGroupModal from "./components/CreateSubGroupModal";
 import { useState } from "react";
-
+import { getSubgroups } from "../../services/groupServices/GetSubGroups";
 
 const columns = [
   { id: "name", label: "Name", minWidth: 170 },
@@ -36,7 +35,7 @@ export default function SubGroupsPage({ groupId }) {
     const getData = async () => {
       try {
         console.log(groupId)
-        const result = await getSubGroups("3",groupId); // Backend'den veri çekme
+        const result = await getSubgroups("3",groupId); // Backend'den veri çekme
         setData(result);
       } catch (error) {
         console.error("Veri çekme başarısız:", error);

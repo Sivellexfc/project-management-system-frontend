@@ -1,6 +1,5 @@
 import React from "react";
 import { Outlet } from "react-router-dom"; // Dinamik içerik için
-import Sidebar from "./Sidebar"; // Sidebar bileşeni
 import Header from "./Header"; // Header bileşeni
 import { AuthProvider } from "../Context/AuthContext";
 import SidebarNew from "./SidebarNew";

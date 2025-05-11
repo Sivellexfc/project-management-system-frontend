@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FaCross, FaFlag, FaPlus, FaTrash, FaXbox, FaSearch } from "react-icons/fa";
+import { FaCross, FaFlag, FaPlus, FaTrash, FaXbox, FaSearch, FaExclamationTriangle } from "react-icons/fa";
 import { IoMdAlert } from "react-icons/io";
-import { MdLowPriority } from "react-icons/md";
+import { MdLowPriority, MdPriorityHigh } from "react-icons/md";
 import Cookies from "js-cookie";
 import { createIssue } from "../../services/issueServices/CreateNewIssue";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { RxCross1 } from "react-icons/rx";
-
+import { AiOutlineWarning } from "react-icons/ai";
+import { BsInfoCircle } from "react-icons/bs";
+import LABELS from "../utils/Labels";
 
 interface Props {
   onClose: () => void;
@@ -32,12 +34,7 @@ const STAGES = [
   { id: 4, name: "DONE" }
 ];
 
-const LABELS = [
-  { id: 1, name: "Acil", color: "red" },
-  { id: 2, name: "Hata Düzeltme", color: "orange" },
-  { id: 3, name: "Geliştirme", color: "blue" },
-  { id: 4, name: "İyileştirme", color: "green" }
-];
+
 
 const TaskModal: React.FC<Props> = ({ onClose }) => {
   const { projectId } = useParams();
@@ -296,33 +293,44 @@ const TaskModal: React.FC<Props> = ({ onClose }) => {
                   onClick={() => setPriority(1)}
                   className={`flex items-center justify-center p-3 rounded-md ${
                     priority === 1
-                      ? "bg-green-100 text-green-600 border-2 border-green-600"
-                      : "bg-gray-100 text-gray-600"
+                      ? "bg-green-100 text-green-600 border-1 border-green-600"
+                      : "bg-borderColor text-primary"
                   }`}
                 >
-                  <MdLowPriority size={24} />
+                  <BsInfoCircle    size={24} />
                 </button>
                 <button
                   type="button"
                   onClick={() => setPriority(2)}
                   className={`flex items-center justify-center p-3 rounded-md ${
                     priority === 2
-                      ? "bg-yellow-100 text-yellow-600 border-2 border-yellow-600"
-                      : "bg-gray-100 text-gray-600"
+                      ? "bg-yellow-100 text-yellow-600 border-1 border-yellow-600"
+                      : "bg-borderColor text-primary"
                   }`}
                 >
-                  <FaFlag size={24} />
+                  <AiOutlineWarning size={24} />
                 </button>
                 <button
                   type="button"
                   onClick={() => setPriority(3)}
                   className={`flex items-center justify-center p-3 rounded-md ${
                     priority === 3
-                      ? "bg-red-100 text-red-600 border-2 border-red-600"
-                      : "bg-gray-100 text-gray-600"
+                      ? "bg-orange-100 text-orange-400 border-1 border-orange-400"
+                      : "bg-borderColor text-primary"
                   }`}
                 >
-                  <IoMdAlert size={24} />
+                  <FaExclamationTriangle  size={24} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPriority(4)}
+                  className={`flex items-center justify-center p-3 rounded-md ${
+                    priority === 4
+                      ? "bg-red-100 text-red-600 border-1 border-red-600"
+                      : "bg-borderColor text-primary"
+                  }`}
+                >
+                  <MdPriorityHigh size={24} />
                 </button>
               </div>
             </div>
@@ -338,7 +346,7 @@ const TaskModal: React.FC<Props> = ({ onClose }) => {
                     onClick={() => setSelectedLabel(label.id)}
                     className={`px-4 py-2 rounded-full text-sm flex items-center gap-2 transition-colors ${
                       selectedLabel === label.id
-                        ? `bg-${label.color}-100 text-${label.color}-800 border-2 border-${label.color}-500`
+                        ? `bg-${label.color}-100 text-${label.color}-800  border-${label.color}-500`
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
