@@ -184,7 +184,8 @@ const TaskModal: React.FC<Props> = ({ onClose }) => {
 
       if (response.isSuccess) {
         // Task başarıyla oluşturulduysa, stepleri ekle
-        const taskId = response.result;
+        console.log("response.result : ",response.result.issueId)
+        const taskId = response.result.issueId;
         const accessToken = Cookies.get('accessToken');
 
         // Her bir step için ayrı POST isteği gönder

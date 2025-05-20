@@ -6,6 +6,14 @@ export type Column = {
     color: string;
 };
 
+export type Project = {
+    id: Id;
+    name: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+};
+
 export type Task = {
     id: Id;
     name:string;

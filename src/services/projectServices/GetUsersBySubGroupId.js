@@ -16,9 +16,6 @@ export const fetchUsersBySubGroupId = async (companyId, projectId, subGroupId) =
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log("projectId : ",projectId)
-    console.log("subGroupId : ",subGroupId)
-    console.log("api response ",response.data.result)
 
     return response.data;
   } catch (error) {

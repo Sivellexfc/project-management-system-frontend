@@ -11,6 +11,7 @@ import { BiArrowToRight } from "react-icons/bi";
 import { BsArrowBarRight } from "react-icons/bs";
 import { CgArrowRight } from "react-icons/cg";
 import { jwtDecode } from "jwt-decode";
+import { fecthCompanyInfos } from "../services/companyServices/GetUserCompanyInfos";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -32,7 +33,11 @@ const Login = () => {
           },
         }
       );
+
       const accessToken = response.data.result.accessToken;
+
+      localStorage.setItem("accessToken", accessToken);
+
       Cookies.set('accessToken', accessToken);
       const decodedToken = jwtDecode(accessToken);
       const role = decodedToken.userRole;
@@ -43,6 +48,12 @@ const Login = () => {
       } else if (role === 'ADMIN' || role === 'COMPANY_OWNER') {
         navigate('/selectCompany');
       } else {
+        try {
+          const response = await fecthCompanyInfos();
+          Cookies.set('selectedCompanyId', response.result.company.id);
+        } catch (error) {
+          console.log("User company infos error : ",error);
+        }
         navigate('/dashboard');
       }
     } catch (error) {

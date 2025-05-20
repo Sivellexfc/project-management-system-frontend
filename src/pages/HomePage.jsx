@@ -9,6 +9,7 @@ const HomePage = () => {
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-colorFirst to-blue-600 opacity-10"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
+          <h1 className="text-10xl">WORKDEN</h1>
           <h1 className="text-5xl font-bold text-gray-900 mb-6 animate-fade-in">
             Proje Yönetim Sisteminizi Kolaylaştırın
           </h1>

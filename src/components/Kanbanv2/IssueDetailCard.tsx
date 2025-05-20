@@ -20,6 +20,12 @@ import Cookies from "js-cookie";
 import { useParams } from "react-router-dom";
 import { GoCheck, GoPlus } from "react-icons/go";
 import { assignIssue } from "../../services/issueServices/AssignIssue";
+import { getStepsByIssueId } from "../../services/issueServices/GetIssueStepsById";
+import {
+  createComment,
+  getCommentsByIssueId,
+  deleteComment,
+} from "../../services/commentServices/CommentServices";
 
 interface Props {
   task: Task;
@@ -42,12 +48,20 @@ interface AssignedUser extends User {
 
 interface Comment {
   id: number;
-  user: User;
-  content: string;
-  date: string;
+  commentText: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    photo: string;
+  };
+  edited: boolean;
 }
 
 interface Step {
+  stepNumber: number;
   id: number;
   description: string;
   isDone: boolean;
@@ -109,53 +123,16 @@ const mockUsers: User[] = [
   },
 ];
 
-const mockComments: Comment[] = [
-  {
-    id: 1,
-    user: {
-      id: 1,
-      name: "Ahmet Yılmaz",
-      firstName: "Ahmet",
-      lastName: "Yılmaz",
-      email: "ahmet.yilmaz@example.com",
-      avatar: "https://i.pravatar.cc/150?img=1",
-      role: "Developer",
-    },
-    content: "Bu görev için gerekli analiz tamamlandı.",
-    date: "2024-03-15T10:30:00",
-  },
-  {
-    id: 2,
-    user: {
-      id: 2,
-      name: "Mehmet Demir",
-      firstName: "Mehmet",
-      lastName: "Demir",
-      email: "mehmet.demir@example.com",
-      avatar: "https://i.pravatar.cc/150?img=2",
-      role: "Tester",
-    },
-    content: "Tasarım çalışmaları başladı.",
-    date: "2024-03-15T14:45:00",
-  },
-];
-
-const mockSteps: Step[] = [
-  { id: 1, description: "Analiz yapılacak", isDone: true },
-  { id: 2, description: "Tasarım tamamlanacak", isDone: false },
-  { id: 3, description: "Kod yazılacak", isDone: false },
-  { id: 4, description: "Test edilecek", isDone: false },
-];
-
 const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
   const { projectId } = useParams();
   const [searchQuery, setSearchQuery] = useState("");
+  const [steps, setSteps] = useState<Step[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [assignedUsers, setAssignedUsers] = useState<AssignedUser[]>([]);
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState<Comment[]>(mockComments);
-  const [steps, setSteps] = useState<Step[]>(mockSteps);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [stepss, setStepss] = useState<Step[]>();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [assignedUsersByRole, setAssignedUsersByRole] = useState<{
     [key: string]: any[];
@@ -168,7 +145,6 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
           Cookies.get("selectedCompanyId"),
           projectId
         );
-        console.log("result : ", result);
         const transformedUsers: User[] = result.result.map((u: any) => ({
           id: u.user.id,
           firstName: u.user.firstName,
@@ -179,11 +155,23 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
           name: u.user.firstName + " " + u.user.lastName,
         }));
         setUsers(transformedUsers);
-        console.log("users : ", transformedUsers);
       } catch (error) {
         console.error("Veri çekme başarısız:", error);
       }
     };
+
+    const getSteps = async () => {
+      try {
+        const response = await getStepsByIssueId(task.id);
+        setSteps(response.result);
+
+        console.log("users : ");
+      } catch (error) {
+        console.error("Veri çekme başarısız:", error);
+      }
+    };
+
+    getSteps();
     getData();
   }, []);
 
@@ -191,6 +179,7 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
     const fetchAssignedUsers = async () => {
       try {
         const result = await getUsersByIssue(task.id);
+        console.log("assigned users : ", result);
         if (result.isSuccess) {
           setAssignedUsersByRole(result.result);
         }
@@ -201,6 +190,28 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
 
     fetchAssignedUsers();
   }, [task.id]);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const companyId = Cookies.get("selectedCompanyId");
+        if (!companyId || !projectId) return;
+
+        const response = await getCommentsByIssueId(
+          companyId,
+          projectId,
+          Number(task.id)
+        );
+        if (response.isSuccess) {
+          setComments(response.result.comments);
+        }
+      } catch (error) {
+        console.error("Yorumlar alınırken hata oluştu:", error);
+      }
+    };
+
+    fetchComments();
+  }, [task.id, projectId]);
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), "dd MMMM yyyy", { locale: tr });
@@ -232,7 +243,7 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
     const colors = [
       "bg-red-500",
       "bg-green-500",
-      "bg-blue-500",
+      "bg-sky-500",
       "bg-yellow-500",
       "bg-purple-500",
       "bg-pink-500",
@@ -243,24 +254,44 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
     return colors[id % colors.length]; // deterministik renk, id'ye göre
   };
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (newComment.trim()) {
-      const comment: Comment = {
-        id: Date.now(),
-        user: {
-          id: 1,
-          name: "Mevcut Kullanıcı",
-          firstName: "Mevcut",
-          lastName: "Kullanıcı",
-          email: "mevcut.kullanici@example.com",
-          avatar: "https://i.pravatar.cc/150?img=4",
-          role: "User",
-        },
-        content: newComment.trim(),
-        date: new Date().toISOString(),
-      };
-      setComments([...comments, comment]);
-      setNewComment("");
+      try {
+        const companyId = Cookies.get("selectedCompanyId");
+        if (!companyId || !projectId) return;
+
+        const response = await createComment(
+          companyId,
+          projectId,
+          Number(task.id),
+          newComment.trim()
+        );
+        if (response.isSuccess) {
+          setComments([response.result, ...comments]);
+          setNewComment("");
+        }
+      } catch (error) {
+        console.error("Yorum eklenirken hata oluştu:", error);
+      }
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      const companyId = Cookies.get("selectedCompanyId");
+      if (!companyId || !projectId) return;
+
+      const response = await deleteComment(
+        companyId,
+        projectId,
+        Number(task.id),
+        commentId
+      );
+      if (response.isSuccess) {
+        setComments(comments.filter((comment) => comment.id !== commentId));
+      }
+    } catch (error) {
+      console.error("Yorum silinirken hata oluştu:", error);
     }
   };
 
@@ -273,7 +304,7 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
   async function handleAssignUsers(): Promise<void> {
     try {
       for (const user of assignedUsers) {
-        await assignIssue(task.id, user.id, user.role);
+        await assignIssue(task.id, user.id, user.role.toUpperCase());
       }
       console.log("Tüm kullanıcılar başarıyla atandı.");
     } catch (error) {
@@ -296,7 +327,7 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
 
         <div className="grid grid-cols-12 gap-6">
           {/* Sol Kolon - Üst: Detay Bilgileri */}
-          <div className="col-span-8 space-y-6 pr-6">
+          <div className="col-span-8 space-y-6 ">
             <div className="space-y-4">
               {/* Öncelik ve Etiket */}
               <div className="flex items-center gap-4">
@@ -335,48 +366,33 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
                     </span>
                   </div>
                 )}
+                <span className="text-sm text-primary opacity-60 font-light">{formatDate(task.startDate) + " - " + formatDate(task.deadLineDate)}</span>
+                
               </div>
 
               {/* İçerik */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  İçerik
+                  Açıklama
                 </h3>
                 <p className="text-gray-600 whitespace-pre-wrap">
                   {task.explanation}
                 </p>
               </div>
 
-              {/* Tarihler */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">
-                    Başlangıç Tarihi
-                  </h3>
-                  <p className="text-gray-900">{formatDate(task.startDate)}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">
-                    Bitiş Tarihi
-                  </h3>
-                  <p className="text-gray-900">
-                    {formatDate(task.deadLineDate)}
-                  </p>
-                </div>
-              </div>
-
+            
               {/* Adımlar */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   Adımlar
                 </h3>
                 <div className="relative pl-6">
-                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-200">
+                  <div className="absolute left-[32.5px] top-0 bottom-0 w-0.5 bg-gray-200">
                     {steps.map((step, index) => (
                       <div
                         key={step.id}
                         className={`absolute left-0 w-0.5 ${
-                          step.isDone ? "bg-green-500" : "bg-gray-200"
+                          step.isDone ? "bg-green-500" : "bg-gray-100"
                         }`}
                         style={{
                           top: `${(index * 100) / steps.length}%`,
@@ -392,19 +408,19 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
                         className="flex items-center gap-4 relative"
                       >
                         <div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                          className={`w-5 h-5 rounded-full flex items-center justify-center ${
                             step.isDone
                               ? "bg-green-500 text-white"
-                              : "bg-gray-200"
+                              : "bg-gray-100"
                           }`}
                         >
-                          {step.isDone && <FaCheck size={12} />}
+                          {step.isDone && <FaCheck size={10} />}
                         </div>
                         <span
                           className={`flex-1 ${
                             step.isDone
-                              ? "line-through text-gray-400"
-                              : "text-gray-700"
+                              ? "line-through text-primary text-sm opacity-60"
+                              : "text-primary text-sm opacity-70"
                           }`}
                         >
                           {step.description}
@@ -421,50 +437,74 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Yorumlar
               </h3>
-              <div className="space-y-4">
-                {comments.map((comment) => (
-                  <div
-                    key={comment.id}
-                    className="bg-gray-50 p-4 rounded-lg shadow-sm"
-                  >
-                    <div className="flex items-start gap-3">
-                      <img
-                        src={comment.user.avatar}
-                        alt={comment.user.name}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-gray-700">
-                            {comment.user.name}
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            {formatDate(comment.date)}
-                          </span>
+              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+                {comments.length === 0 ? (
+                  <div className="bg-gray-50 p-6 rounded-lg text-center">
+                    <p className="text-gray-500">Henüz yorum bulunmamaktadır</p>
+                  </div>
+                ) : (
+                  comments.map((comment) => (
+                    <div key={comment.id} className="bg-gray-50 p-4 ">
+                      <div className="flex items-start gap-3">
+                        {comment.user.photo && false ? (
+                          <img
+                            src={comment.user.photo}
+                            alt={`${comment.user.firstName} ${comment.user.lastName}`}
+                            className="w-10 h-10 rounded-full"
+                          />
+                        ) : (
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold ${getRandomColor(
+                              comment.user.id
+                            )}`}
+                            title={`${comment.user.firstName} ${comment.user.lastName}`}
+                          >
+                            {getInitials(
+                              comment.user.firstName,
+                              comment.user.lastName
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-700">
+                                {comment.user.firstName} {comment.user.lastName}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                {formatDate(comment.createdAt)}
+                              </span>
+                              {comment.edited && (
+                                <span className="text-xs text-gray-400">
+                                  (düzenlendi)
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => handleDeleteComment(comment.id)}
+                              className="text-gray-400 hover:text-red-500"
+                            >
+                              <FaTrash size={14} />
+                            </button>
+                          </div>
+                          <p className="text-gray-600">{comment.commentText}</p>
                         </div>
-                        <p className="text-gray-600">{comment.content}</p>
                       </div>
                     </div>
-                  </div>
-                ))}
-                <div className="flex gap-2 mt-4">
-                  <img
-                    src="https://i.pravatar.cc/150?img=4"
-                    alt="Mevcut Kullanıcı"
-                    className="w-10 h-10 rounded-full"
+                  ))
+                )}
+              </div>
+              <div className="flex gap-2 mt-4">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    placeholder="Yorum ekle..."
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
                   />
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      placeholder="Yorum ekle..."
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      onKeyPress={(e) =>
-                        e.key === "Enter" && handleAddComment()
-                      }
-                    />
-                  </div>
                 </div>
               </div>
             </div>
@@ -498,7 +538,10 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
                   >
                     <GoPlus />
                   </button>
-                  <button onClick={() => handleAssignUsers()} className="border border-[#A6F268] hover:bg-[#9dee5b] hover:border-[#9dee5b] rounded-lg px-4 py-2 bg-[#A6F268] text-white">
+                  <button
+                    onClick={() => handleAssignUsers()}
+                    className="border border-[#A6F268] hover:bg-[#9dee5b] hover:border-[#9dee5b] rounded-lg px-4 py-2 bg-[#A6F268] text-white"
+                  >
                     <GoCheck />
                   </button>
                 </div>
@@ -586,9 +629,6 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
               <div className="overflow-y-auto max-h-[calc(100%-3rem)]">
                 {Object.entries(assignedUsersByRole).map(([role, users]) => (
                   <div key={role} className="space-y-2 mb-4">
-                    <h5 className="text-sm font-medium text-gray-600 px-2 py-1 bg-gray-50 rounded-md">
-                      {role}
-                    </h5>
                     <div className="space-y-2">
                       {users.map((user) => (
                         <div
@@ -603,9 +643,14 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
                           >
                             {getInitials(user.firstName, user.lastName)}
                           </div>
-                          <span className="text-gray-700 truncate">
-                            {user.firstName + " " + user.lastName}
-                          </span>
+                          <div className="flex flex-raw justify-between w-full">
+                            <span className="text-gray-700 truncate">
+                              {user.firstName + " " + user.lastName}
+                            </span>
+                            <span className="text-primary text-sm opacity-50 font-light truncate">
+                              {role}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>

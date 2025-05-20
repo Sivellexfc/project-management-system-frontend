@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Column, Task, Id } from "./types";
+import { Column, Task, Id, Project } from "./types";
 import KanbanColumn from "./KanbanColumn";
 import {
   DndContext,
@@ -15,9 +15,13 @@ import { columns as initialColumns } from "./datas";
 import { useParams } from "react-router-dom";
 import { getIssuesByProjectId } from "../../services/issueServices/GetIssuesByProjectId";
 import Cookies from "js-cookie";
+import { fetchData } from "../../services/projectServices/GetProjectById";
+import { RxDotFilled } from "react-icons/rx";
 
 const KanbanBoard = ({}) => {
   const { projectId } = useParams();
+
+  const [project, setProject] = useState<Project | null>(null);
   const [columns, setColumns] = useState<Column[]>(initialColumns);
 
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -30,9 +34,33 @@ const KanbanBoard = ({}) => {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      const response = await getIssuesByProjectId(Cookies.get("selectedCompanyId"),Number(projectId));
+      const projectResponse = await fetchData(
+        Cookies.get("selectedCompanyId"),
+        Number(projectId)
+      );
+      console.log(projectResponse);
+      if (projectResponse.isSuccess) {
+        setProject(projectResponse.result);
+        console.log("Proje", projectResponse.result);
+      } else {
+        setError("Proje yüklenirken bir hata oluştu.");
+      }
+    } catch (err) {
+      setError("Proje yüklenirken bir hata oluştu.");
+      console.error("Error fetching Project:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProject = async () => {
+    try {
+      setLoading(true);
+      const response = await getIssuesByProjectId(
+        Cookies.get("selectedCompanyId"),
+        Number(projectId)
+      );
       if (response.isSuccess) {
-      
         // ID değerlerini string'e dönüştürerek setTasks ile güncelleme
         const updatedTasks = response.result.map((task) => ({
           ...task,
@@ -43,34 +71,42 @@ const KanbanBoard = ({}) => {
           priorityId: task.priority?.id,
           stageId: task.stage?.id,
         }));
-        
-        console.log(updatedTasks)
-      
-        setTasks((prevTasks) => [...prevTasks, ...updatedTasks]);
-      }
-      else {
-        setError('Görevler yüklenirken bir hata oluştu.');
+
+        console.log(updatedTasks);
+
+        setTasks(updatedTasks);
+      } else {
+        setError("Görevler yüklenirken bir hata oluştu.");
       }
     } catch (err) {
-      setError('Görevler yüklenirken bir hata oluştu.');
-      console.error('Error fetching tasks:', err);
+      setError("Görevler yüklenirken bir hata oluştu.");
+      console.error("Error fetching tasks:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
 
+    fetchProject();
+    fetchTasks();
+  }, [projectId]);
 
   return (
     <div className="w-full space-y-4">
-      <div>
-        <h1 className="font-primary text-3xl font-semibold">Kanban Board</h1>
-        <h1 className="font-primary text-2xl font-light">
-          {"- " + "Test Projesi"}
-        </h1>
+      <div className="flex flex-col">
+        <div>
+          <h1 className="font-primary text-3xl font-semibold">Kanban Board</h1>
+        </div>
+        <div className="flex justify-between">
+          <div className="flex flex-row gap-2 items-center">
+            <RxDotFilled size={20} />
+          <h1 className="font-primary text-xl font-light italic">{project?.name}</h1>
+          </div>
+          <h1 className="font-primary italic opacity-50 text-md font-light">
+            {project?.startDate + " to " + project?.endDate}
+          </h1>
+        </div>
       </div>
       <div className="mx-auto flex w-full items-center overflow-x-auto overflow-y-hidden">
         <DndContext

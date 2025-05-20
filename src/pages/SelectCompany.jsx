@@ -4,6 +4,7 @@ import axios from "axios";
 
 const SelectCompany = () => {
   const accessToken = Cookies.get("accessToken");
+  const token = localStorage.getItem("accessToken");
 
   const [companies, setCompanies] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
@@ -17,7 +18,7 @@ const SelectCompany = () => {
           {
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );

@@ -133,7 +133,6 @@ const SidebarNew = () => {
       try {
         const companyId = Cookies.get("selectedCompanyId");
         const projectsData = await fetchData(companyId);
-        console.log("projectsData  : ", projectsData);
 
         const projectsWithDetails = await Promise.all(
           projectsData.result.map(async (project) => {
@@ -143,8 +142,6 @@ const SidebarNew = () => {
             const groupsWithDetails = await Promise.all(
               groupsData.result.map(async (group) => {
                 const subGroupsData = await fetchSubGroups(companyId, group.id);
-                console.log("subGroupsData ", subGroupsData)
-                console.log(subGroupsData.result)
                 if (!subGroupsData.result || subGroupsData.result.length === 0) {
                 
                   const usersData = await fetchUsersByGroupId(
@@ -193,7 +190,6 @@ const SidebarNew = () => {
 
         setProjects(projectsWithDetails);
         setLoading(false);
-        console.log("PROJECTS",projectsWithDetails);
       } catch (err) {
         console.log(err);
         setError(err.message);
@@ -239,7 +235,6 @@ const SidebarNew = () => {
       try {
         const result = await fetchData(Cookies.get("selectedCompanyId")); // Backend'den veri çekme
         setData(result.result);
-        console.log(result);
       } catch (error) {
         console.error("Veri çekme başarısız:", error);
       }
@@ -257,7 +252,7 @@ const SidebarNew = () => {
     },
     {
       name: "Yapılacaklar",
-      path: "/issues",
+      path: "/todo",
       roles: ["USER", "ADMIN", "COMPANY_OWNER"],
       icon: <FaTasks />,
     },
@@ -302,8 +297,6 @@ const SidebarNew = () => {
   const accessToken = Cookies.get("accessToken");
   const userinfos = jwtDecode(accessToken);
 
-  console.log(userinfos);
-
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const selectedCompany = JSON.parse(
@@ -339,7 +332,7 @@ const SidebarNew = () => {
           >
             <span className={`${
               !isCollapsed
-                ? "text-2xl font-bold text-[#566AA6]"
+                ? "text-2xl font-bold text-sky-600"
                 : "hidden"
             }`}>WORKDEN</span>
             <button onClick={toggleSidebar}>
@@ -347,7 +340,7 @@ const SidebarNew = () => {
             </button>
           </div>
 
-          <ul className="flex-1 px-3 mt-10">
+          <ul className="flex-1 px-3 mt-10 overflow-y-auto">
             {filteredMenu.map((item) =>
               item.path === "/projects" ? (
                 sidebarItems.map((subItem) => (

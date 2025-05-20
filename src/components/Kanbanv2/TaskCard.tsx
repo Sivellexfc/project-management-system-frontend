@@ -35,7 +35,6 @@ function TaskCard({ task }: Props) {
     setShowDetail(false);
   }, [task]); // Task değiştikçe detay kapanacak
 
-
   const {
     setNodeRef,
     attributes,
@@ -55,20 +54,28 @@ function TaskCard({ task }: Props) {
     transition,
     transform: CSS.Transform.toString(transform),
   };
-  console.log("task.labelId : ", task.labelId)
+  console.log("task.labelId : ", task.labelId);
   return (
     <div
       ref={setNodeRef}
       style={{
         ...style,
-        borderLeft: `6px solid ${PRIORITY[task.priorityId]?.color || '#ccc'}`
+        borderLeft: `6px solid ${PRIORITY[task.priorityId]?.color || "#ccc"}`,
       }}
       {...(showDetail ? {} : attributes)}
       {...(showDetail ? {} : listeners)}
       className="w-full px-4 py-2 space-y-2 bg-colorFirst border-t border-r border-b border-borderColor rounded-md hover:shadow-md cursor-grab"
     >
-      <div className="flex justify-between">
-        <h2 className="font-primary text-lg font-normal">{task.name}</h2>
+      <div className="flex justify-between items-center gap-1">
+        <div className="flex flex-raw gap-1 items-center justify-center">
+          <h2 className="font-primary text-lg font-normal">{task.name}</h2>
+          
+            <KanbanCardLabel
+              color={LABELS.find((l) => l.id === task.labelId)?.color}
+              text={LABELS.find((l) => l.id === task.labelId)?.name}
+            ></KanbanCardLabel>
+          
+        </div>
         <button
           onPointerDown={(e) => e.stopPropagation()} // Sürükleme olaylarını engelle
           onClick={(e) => {
@@ -78,17 +85,14 @@ function TaskCard({ task }: Props) {
           }}
           className="text-gray-500 hover:text-gray-700 p-1"
         >
-          <FaInfoCircle size={20} className="opacity-40"/>
+          <FaInfoCircle size={20} className="opacity-40" />
         </button>
       </div>
       <div className="space-y-2">
-        <div>
-          <KanbanCardLabel color={LABELS.find(l => l.id === task.labelId)?.color} text={LABELS.find(l => l.id === task.labelId)?.name}></KanbanCardLabel>
-        </div>
         <p className="font-primary text-sm font-light">{task.explanation}</p>
       </div>
       <div></div>
-      
+
       {showDetail &&
         createPortal(
           <IssueDetailCard task={task} onClose={() => setShowDetail(false)} />,

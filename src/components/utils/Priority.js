@@ -1,8 +1,8 @@
 const PRIORITY = [
-    { id: 1, name: "LOW",color:"#36B83E" },
-    { id: 2, name: "MEDIUM",color:"#E3D246" },
-    { id: 3, name: "HIGH",color:"#F59236" },
-    { id: 4, name: "CRITICAL",color:"#E83935" }
+    { id: 1, name: "LOW",color:"sky-600" },
+    { id: 2, name: "MEDIUM",color:"sky-400" },
+    { id: 3, name: "HIGH",color:"sky-200" },
+    { id: 4, name: "CRITICAL",color:"sky-100" }
   ];
 
 export default PRIORITY;
