@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaPlus,
   FaSearch,
@@ -10,6 +10,10 @@ import {
 } from "react-icons/fa";
 import CreateHelpModal from "./Help/CreateHelpModal";
 import HelpCard from "./Help/HelpCard";
+import { fetchHelps } from "../services/helpServices/GetHelpsByProjectId";
+import { getMyProjects } from "../services/projectServices/GetMyProjects";
+import Cookies from "js-cookie";
+import { fetchData } from "../services/projectServices/GetProjects";
 
 const MOCK_HELPS = [
   {
@@ -54,8 +58,7 @@ const MOCK_HELPS = [
           lastName: "Smith",
           photoUrl: "https://example.com/profile/alice_smith.jpg",
         },
-        content:
-          "Öncelikle driverların güncel mi?",
+        content: "Öncelikle driverların güncel mi?",
         createdAt: "2024-03-03T13:00:00",
       },
       {
@@ -67,10 +70,9 @@ const MOCK_HELPS = [
           lastName: "Smith",
           photoUrl: "https://example.com/profile/alice_smith.jpg",
         },
-        content:
-          "Driverları güncelle",
+        content: "Driverları güncelle",
         createdAt: "2024-03-03T13:00:00",
-      }
+      },
     ],
   },
 ];
@@ -85,7 +87,7 @@ const Help = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProject, setSelectedProject] = useState("all");
-  const [helps, setHelps] = useState(MOCK_HELPS);
+  const [helps, setHelps] = useState([]);
 
   const filteredHelps = helps.filter((help) => {
     const matchesSearch =
@@ -100,6 +102,35 @@ const Help = () => {
 
     return matchesSearch && matchesProject;
   });
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetchData(Cookies.get("selectedCompanyId"));
+        const projects = response.result;
+        // Her proje için help verilerini çek
+        for (const project of projects) {
+          const helpRequests = projects.map((project) =>
+            fetchHelps(project.id)
+          );
+
+          // Paralel olarak hepsini bekle
+          const helpsPerProject = await Promise.all(helpRequests);
+
+          // Tüm helps'leri tek bir diziye düzle
+          const allHelps = helpsPerProject.flat();
+
+          // State'e ata
+          setHelps(allHelps);
+          console.log("All Helps:", allHelps);
+        }
+      } catch (error) {
+        console.error("Projeler veya raporlar alınırken hata oluştu:", error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   return (
     <div className="w-full p-6">

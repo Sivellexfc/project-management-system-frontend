@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaTag,
   FaUser,
@@ -8,6 +8,7 @@ import {
   FaImage,
   FaFileAlt,
 } from "react-icons/fa";
+import { fetchHelpComments } from "../../services/helpServices/GetHelpComments";
 
 const PRIORITY_COLORS = {
   LOW: "bg-green-100 text-green-800",
@@ -24,9 +25,23 @@ const STATUS_COLORS = {
 };
 
 const HelpCard = ({ help }) => {
+  const [comments,setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [newComment, setNewComment] = useState("");
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await fetchHelpComments(help.id);
+        setComments(response);
+      } catch (error) {
+        console.error("Projeler veya raporlar alınırken hata oluştu:", error);
+      }
+    };
+
+    fetchComments();
+  }, []);
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
@@ -140,7 +155,7 @@ const HelpCard = ({ help }) => {
         >
           <div className="flex items-center gap-2">
             <FaComment />
-            <span>{help.comments.length} Yorum</span>
+            <span>{comments.length} Yorum</span>
           </div>
           <span className="text-xs">{showComments ? "Gizle" : "Göster"}</span>
         </button>
@@ -148,7 +163,7 @@ const HelpCard = ({ help }) => {
         {showComments && (
           <div className="px-6 py-4 space-y-4">
             {/* Comments List */}
-            {help.comments.map((comment) => (
+            {comments.map((comment) => (
               <div key={comment.id} className="flex gap-4">
                 <img
                   src={comment.commenter.photoUrl}

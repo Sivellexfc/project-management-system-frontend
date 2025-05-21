@@ -1,8 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaTimes, FaUpload, FaTag, FaUser, FaCode } from "react-icons/fa";
+import { fetchData } from "../../services/projectServices/GetProjects";
+import Cookies from "js-cookie";
 
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
-const LANGUAGES = ["JAVA", "PYTHON", "JAVASCRIPT", "C#", "PHP", "RUBY", "GO", "OTHER"];
+const LANGUAGES = [
+  "JAVA",
+  "PYTHON",
+  "JAVASCRIPT",
+  "C#",
+  "PHP",
+  "RUBY",
+  "GO",
+  "OTHER",
+];
 const STATUSES = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 
 const CreateHelpModal = ({ closeModal, projects }) => {
@@ -17,17 +28,49 @@ const CreateHelpModal = ({ closeModal, projects }) => {
     logFileUrls: [],
     codeSnippet: "",
     mentions: [],
-    tags: []
+    tags: [],
   });
 
+  const [photo, setPhoto] = useState(null);
   const [newTag, setNewTag] = useState("");
   const [newMention, setNewMention] = useState("");
+  const [projectsToShow, setProjectsToShow] = useState([]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetchData(Cookies.get("selectedCompanyId"));
+        const projects = response.result;
+        setProjectsToShow(projects);
+      } catch (error) {
+        console.error("Projeler veya raporlar alınırken hata oluştu:", error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Dosya boyutu 5MB'dan büyük olamaz!");
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        alert("Lütfen bir resim dosyası seçin!");
+        return;
+      }
+      setPhoto(file);
+      setPhotoPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -40,18 +83,18 @@ const CreateHelpModal = ({ closeModal, projects }) => {
   const handleAddTag = (e) => {
     e.preventDefault();
     if (newTag && !formData.tags.includes(newTag)) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, newTag]
+        tags: [...prev.tags, newTag],
       }));
       setNewTag("");
     }
   };
 
   const handleRemoveTag = (tagToRemove) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
@@ -67,7 +110,9 @@ const CreateHelpModal = ({ closeModal, projects }) => {
       <div className="bg-white rounded-lg shadow-xl w-[800px] max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-800">Yeni Destek Talebi</h2>
+          <h2 className="text-xl font-semibold text-gray-800">
+            Yeni Destek Talebi
+          </h2>
           <button
             onClick={closeModal}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -92,7 +137,7 @@ const CreateHelpModal = ({ closeModal, projects }) => {
                 required
               >
                 <option value="">Proje Seçin</option>
-                {projects.map(project => (
+                {projectsToShow.map((project) => (
                   <option key={project.id} value={project.id}>
                     {project.name}
                   </option>
@@ -142,7 +187,7 @@ const CreateHelpModal = ({ closeModal, projects }) => {
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  {PRIORITIES.map(priority => (
+                  {PRIORITIES.map((priority) => (
                     <option key={priority} value={priority}>
                       {priority}
                     </option>
@@ -159,7 +204,7 @@ const CreateHelpModal = ({ closeModal, projects }) => {
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  {STATUSES.map(status => (
+                  {STATUSES.map((status) => (
                     <option key={status} value={status}>
                       {status}
                     </option>
@@ -180,7 +225,7 @@ const CreateHelpModal = ({ closeModal, projects }) => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Dil Seçin</option>
-                {LANGUAGES.map(lang => (
+                {LANGUAGES.map((lang) => (
                   <option key={lang} value={lang}>
                     {lang}
                   </option>
@@ -199,10 +244,11 @@ const CreateHelpModal = ({ closeModal, projects }) => {
                     type="file"
                     multiple
                     accept="image/*"
-                    onChange={(e) => handleFileUpload(e, "screenshot")}
+                    onChange={handlePhotoChange}
                     className="hidden"
                     id="screenshot-upload"
                   />
+                  
                   <label
                     htmlFor="screenshot-upload"
                     className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
@@ -256,7 +302,7 @@ const CreateHelpModal = ({ closeModal, projects }) => {
                 Etiketler
               </label>
               <div className="flex flex-wrap gap-2 mb-2">
-                {formData.tags.map(tag => (
+                {formData.tags.map((tag) => (
                   <span
                     key={tag}
                     className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm"
@@ -273,7 +319,7 @@ const CreateHelpModal = ({ closeModal, projects }) => {
                   </span>
                 ))}
               </div>
-              <form onSubmit={handleAddTag} className="flex gap-2">
+              <div className="flex gap-2">
                 <input
                   type="text"
                   value={newTag}
@@ -282,12 +328,13 @@ const CreateHelpModal = ({ closeModal, projects }) => {
                   placeholder="Yeni etiket ekle"
                 />
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleAddTag} // ✅ Submit değil, sadece click event
                   className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
                 >
                   Ekle
                 </button>
-              </form>
+              </div>
             </div>
 
             {/* Butonlar */}
@@ -301,7 +348,7 @@ const CreateHelpModal = ({ closeModal, projects }) => {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-colorFirst text-primary border border-borderColor rounded-md hover:bg-blue-50 transition-colors"
+                className="px-6 py-2 bg-colorFirst text-primary border border-borderColor rounded-md hover:bg-colorFirst transition-colors"
               >
                 Oluştur
               </button>
@@ -313,4 +360,4 @@ const CreateHelpModal = ({ closeModal, projects }) => {
   );
 };
 
-export default CreateHelpModal; 
+export default CreateHelpModal;
