@@ -4,41 +4,12 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { FaArrowLeft, FaCalendarAlt, FaBuilding, FaUser } from "react-icons/fa";
 
-const AnnouncementDetail = () => {
+const AnnouncementDetail = (announcement) => {
+  
   const { id } = useParams();
   const navigate = useNavigate();
-  const [announcement, setAnnouncement] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetchAnnouncementDetail();
-  }, [id]);
-
-  const fetchAnnouncementDetail = async () => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8085/api/v1/announcements/company/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("accessToken")}`,
-          },
-        }
-      );
-      console.log("response : ",response)
-      if (response.data.isSuccess) {
-        setAnnouncement(response.data.result);
-        console.log("announcement : " ,announcement)
-      } else {
-        setError("Duyuru detayları yüklenirken bir hata oluştu.");
-      }
-    } catch (err) {
-      setError("Duyuru detayları yüklenirken bir hata oluştu.");
-      console.error("Error fetching announcement detail:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);

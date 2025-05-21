@@ -103,7 +103,6 @@ function TaskCard({ task }: Props) {
       ref={setNodeRef}
       style={{
         ...style,
-        
       }}
       {...(showDetail ? {} : attributes)}
       {...(showDetail ? {} : listeners)}
@@ -117,7 +116,6 @@ function TaskCard({ task }: Props) {
           onPointerDown={(e) => e.stopPropagation()} // Sürükleme olaylarını engelle
           onClick={(e) => {
             e.stopPropagation(); // Olayın yayılmasını tamamen engelle
-            console.log("Button clicked!"); // Test için
             setShowDetail(true);
           }}
           className="text-gray-500 hover:text-gray-700 p-1"
@@ -125,51 +123,73 @@ function TaskCard({ task }: Props) {
           <FaInfoCircle size={20} className="opacity-40" />
         </button>
       </div>
-      <PriorityLabel priorityId={Number(task.priorityId)} />
-
-      <KanbanCardLabel
-        color={LABELS.find((l) => l.id === task.labelId)?.color}
-        text={LABELS.find((l) => l.id === task.labelId)?.name}
-      ></KanbanCardLabel>
+      <div className="flex flex-raw gap-1">
+        <PriorityLabel priorityId={Number(task.priorityId)} />
+        <KanbanCardLabel
+          color={LABELS.find((l) => l.id === task.labelId)?.color}
+          text={LABELS.find((l) => l.id === task.labelId)?.name}
+        ></KanbanCardLabel>
+      </div>
       <div className="space-y-2">
         <p className="font-primary text-sm font-light">{task.explanation}</p>
       </div>
       <div className="flex flex-raw justify-between items-center">
-      {loadingUsers ? (
-  <p className="text-sm text-gray-400 italic animate-pulse">
-    Kullanıcılar yükleniyor...
-  </p>
-) : users.length > 0 ? (
-  <div className="w-min flex flex-row gap-2 bg-gray-100 bg-opacity-50 p-2 rounded">
-    {users.map((user) => (
-      <div
-        key={user.userId}
-        className="flex items-center"
-        title={`${user.firstName} ${user.lastName}`}
-      >
-        {false ? (
-          <img
-            alt={`${user.firstName} ${user.lastName}`}
-            className="w-6 h-6 rounded-full"
-          />
-        ) : (
-          <div
-            className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-semibold ${getRandomColor(
-              user.userId
-            )}`}
+        {loadingUsers ? (
+          <p className="text-sm text-gray-400 italic animate-pulse">
+            Kullanıcılar yükleniyor...
+          </p>
+        ) : users.length > 0 ? (
+          <button
+            onPointerDown={(e) => e.stopPropagation()} // Sürükleme olaylarını engelle
+            onClick={(e) => {
+              e.stopPropagation(); // Olayın yayılmasını tamamen engelle
+              console.log("Button clicked!"); // Test için
+              setShowDetail(true);
+            }}
           >
-            {getInitials(user.firstName, user.lastName)}
-          </div>
+            <div className="w-min flex flex-row gap-2 bg-gray-100 bg-opacity-50 hover:bg-gray-100 p-2 rounded">
+              {users.map((user) => (
+                <div
+                  key={user.userId}
+                  className="flex items-center"
+                  title={`${user.firstName} ${user.lastName}`}
+                >
+                  {false ? (
+                    <img
+                      alt={`${user.firstName} ${user.lastName}`}
+                      className="w-6 h-6 rounded-full"
+                    />
+                  ) : (
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-semibold ${getRandomColor(
+                        user.userId
+                      )}`}
+                    >
+                      {getInitials(user.firstName, user.lastName)}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </button>
+        ) : (
+          <p className="text-sm text-gray-400 italic">
+            Henüz kullanıcı atanmadı.
+          </p>
         )}
-      </div>
-    ))}
-  </div>
-) : (
-  <p className="text-sm text-gray-400 italic">Henüz kullanıcı atanmadı.</p>
-)}
 
         <div>
-          <GoComment size={20} />
+          <button
+            onPointerDown={(e) => e.stopPropagation()} // Sürükleme olaylarını engelle
+            onClick={(e) => {
+              e.stopPropagation(); // Olayın yayılmasını tamamen engelle
+              console.log("Button clicked!"); // Test için
+              setShowDetail(true);
+            }}
+            className="text-gray-500 hover:text-gray-700 p-1"
+          >
+            <GoComment size={20} />
+          </button>
         </div>
       </div>
 

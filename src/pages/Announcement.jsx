@@ -2,15 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { FaPlus, FaCalendarAlt, FaBuilding, FaUser } from "react-icons/fa";
+import { FaPlus, FaCalendarAlt, FaBuilding, FaUser, FaTimes, FaCheckCircle } from "react-icons/fa";
 import { jwtDecode } from "jwt-decode";
 
-const Anouncement = () => {
+const Announcement = () => {
   const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [showDetail, setShowDetail] = useState(false);
 
   useEffect(() => {
     const token = Cookies.get("accessToken");
@@ -95,8 +97,9 @@ const Anouncement = () => {
     });
   };
 
-  const handleAnnouncementClick = (id) => {
-    navigate(`/announcement/${id}`);
+  const handleAnnouncementClick = (announcement) => {
+    setSelectedAnnouncement(announcement);
+    setShowDetail(true);
   };
 
   const handleCreateAnnouncement = () => {
@@ -136,21 +139,29 @@ const Anouncement = () => {
         {announcements.map((announcement) => (
           <div
             key={announcement.id}
-            onClick={() => handleAnnouncementClick(announcement.id)}
+            onClick={() => handleAnnouncementClick(announcement)}
             className="bg-white rounded-lg border border-borderColor overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
           >
-            {announcement.imageUrl && (
-              <img
-                src={announcement.imageUrl}
-                alt={announcement.title}
-                className="w-full h-48 object-cover"
-              />
+            {announcement.photo && (
+              <div className="relative h-48">
+                <img
+                  src={announcement.photo}
+                  alt={announcement.title}
+                  className="w-full h-full object-cover"
+                />
+                {announcement.isActive && (
+                  <div className="absolute top-2 right-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                    <FaCheckCircle />
+                    <span>Aktif</span>
+                  </div>
+                )}
+              </div>
             )}
-            <div className="p-6">
+            <div className=" p-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-2">
                 {announcement.title}
               </h2>
-              <p className="text-gray-600 mb-4 line-clamp-3">
+              <p className="text-gray-600 mb-4 line-clamp-2">
                 {announcement.content}
               </p>
               <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -177,8 +188,53 @@ const Anouncement = () => {
           <p className="text-gray-500 text-lg">Henüz duyuru bulunmamaktadır.</p>
         </div>
       )}
+
+      {/* Duyuru Detay Modalı */}
+      {showDetail && selectedAnnouncement && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            {selectedAnnouncement.photo && (
+              <div className="relative h-64">
+                <img
+                  src={selectedAnnouncement.photo}
+                  alt={selectedAnnouncement.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {selectedAnnouncement.title}
+                </h2>
+                <button
+                  onClick={() => setShowDetail(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <FaTimes size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                  <div className="flex items-center gap-1">
+                    <FaCalendarAlt />
+                    <span>{formatDate(selectedAnnouncement.validUntil)}</span>
+                  </div>
+                </div>
+
+                <div className="prose max-w-none min-h-[100px]">
+                  <p className="text-gray-600 whitespace-pre-wrap">
+                    {selectedAnnouncement.content}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Anouncement;
+export default Announcement;

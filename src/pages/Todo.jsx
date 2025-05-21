@@ -85,8 +85,6 @@ const Todo = () => {
     }
   };
 
-  
-
   return (
     <div className="w-full p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Yapılacaklar</h1>

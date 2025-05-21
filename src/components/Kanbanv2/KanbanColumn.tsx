@@ -28,7 +28,6 @@ function KanbanColumn(props: Props) {
     },
   });
 
-  console.log(column.color);
 
   const style = {
     transition,

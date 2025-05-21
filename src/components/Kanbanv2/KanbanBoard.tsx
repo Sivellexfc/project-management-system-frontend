@@ -38,10 +38,8 @@ const KanbanBoard = ({}) => {
         Cookies.get("selectedCompanyId"),
         Number(projectId)
       );
-      console.log(projectResponse);
       if (projectResponse.isSuccess) {
         setProject(projectResponse.result);
-        console.log("Proje", projectResponse.result);
       } else {
         setError("Proje yüklenirken bir hata oluştu.");
       }
@@ -71,8 +69,6 @@ const KanbanBoard = ({}) => {
           priorityId: task.priority?.id,
           stageId: task.stage?.id,
         }));
-
-        console.log(updatedTasks);
 
         setTasks(updatedTasks);
       } else {

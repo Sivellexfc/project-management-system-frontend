@@ -9,7 +9,7 @@ import {
 import Layout from "./components/Layout";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
-import Announcement from "./pages/Anouncement";
+import Announcement from "./pages/Announcement";
 import ProjectDetails from "./components/ProjectDetails";
 import Help from "./components/Help";
 import SubscriptionPage from "./pages/SubscriptionPage";
