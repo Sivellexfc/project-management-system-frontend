@@ -113,12 +113,13 @@ const CompanyProfile = () => {
                       <FaMapMarkerAlt className="text-colorFirst mt-1" />
                       <div>
                         <p className="text-gray-700">
-                          {data.result.address.street},{" "}
-                          {data.result.address.city}
+                        {data.result.address?.street || ""}
+
+                          {data.result.address?.city || ""}
                         </p>
                         <p className="text-gray-700">
-                          {data.result.address.zipCode},{" "}
-                          {data.result.address.country}
+                          {data.result.address?.zipCode || ""}
+                          {data.result.address?.country || ""}
                         </p>
                       </div>
                     </div>

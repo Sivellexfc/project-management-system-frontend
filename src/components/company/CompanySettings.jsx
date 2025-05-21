@@ -27,12 +27,6 @@ const CompanySettings = () => {
       case "projects":
         return <ProfjectSettings />;
 
-      case "groups":
-        return <GroupsPage />;
-
-      case "subgroups":
-        return <SubGroupsPage />;
-
       case "employees":
         return <CompanyEmployees />;
 

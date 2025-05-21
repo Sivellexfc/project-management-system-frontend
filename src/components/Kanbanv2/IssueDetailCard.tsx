@@ -83,45 +83,15 @@ const LABEL_INFO = {
 };
 
 const ROLES = [
-  "User",
-  "Developer",
-  "Designer",
-  "Tester",
-  "Product Owner",
-  "Scrum Master",
-  "Analyst",
+  "DEVELOPER",
+  "REPORTER",
+  "REVIEWER",
+  "TESTER",
+  "PAIR_ASSIGNE", // Çift olarak görev alan geliştirici
+  "QA_ASSIGNE",
 ];
 
-// Statik veriler (API'den gelecek)
-const mockUsers: User[] = [
-  {
-    id: 1,
-    name: "Ahmet Yılmaz",
-    firstName: "Ahmet",
-    lastName: "Yılmaz",
-    email: "ahmet.yilmaz@example.com",
-    avatar: "https://i.pravatar.cc/150?img=1",
-    role: "Developer",
-  },
-  {
-    id: 2,
-    name: "Mehmet Demir",
-    firstName: "Mehmet",
-    lastName: "Demir",
-    email: "mehmet.demir@example.com",
-    avatar: "https://i.pravatar.cc/150?img=2",
-    role: "Tester",
-  },
-  {
-    id: 3,
-    name: "Ayşe Kaya",
-    firstName: "Ayşe",
-    lastName: "Kaya",
-    email: "ayse.kaya@example.com",
-    avatar: "https://i.pravatar.cc/150?img=3",
-    role: "Designer",
-  },
-];
+
 
 const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
   const { projectId } = useParams();
@@ -366,8 +336,11 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
                     </span>
                   </div>
                 )}
-                <span className="text-sm text-primary opacity-60 font-light">{formatDate(task.startDate) + " - " + formatDate(task.deadLineDate)}</span>
-                
+                <span className="text-sm text-primary opacity-60 font-light">
+                  {formatDate(task.startDate) +
+                    " - " +
+                    formatDate(task.deadLineDate)}
+                </span>
               </div>
 
               {/* İçerik */}
@@ -380,7 +353,6 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
                 </p>
               </div>
 
-            
               {/* Adımlar */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">

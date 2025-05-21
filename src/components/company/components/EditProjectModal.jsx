@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { FaPlus, FaUserPlus, FaEnvelope, FaTimes } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { fetchData } from "../../../services/projectServices/GetProjects";
+import { fetchData } from "../../../services/companyServices/GetCompanyEmployees";
 import Cookies from "js-cookie";
 import { createProject } from "../../../services/projectServices/CreateProject";
 import { inviteProjectUser } from "../../../services/projectServices/InviteProjectUser";
 import { getProjectUsers } from "../../../services/projectServices/GetProjectUsers";
+import { getRandomColor } from "../../utils/GetRandomColor";
+import { getInitials } from "../../utils/GetInitials";
 
 // Fake kullanıcı verileri
 const fakeUsers = [
@@ -15,65 +17,66 @@ const fakeUsers = [
     firstName: "Ahmet",
     lastName: "Yılmaz",
     email: "ahmet.yilmaz@example.com",
-    role: "Frontend Developer"
+    role: "Frontend Developer",
   },
   {
     id: 2,
     firstName: "Ayşe",
     lastName: "Kaya",
     email: "ayse.kaya@example.com",
-    role: "Backend Developer"
+    role: "Backend Developer",
   },
   {
     id: 3,
     firstName: "Mehmet",
     lastName: "Demir",
     email: "mehmet.demir@example.com",
-    role: "UI/UX Designer"
+    role: "UI/UX Designer",
   },
   {
     id: 4,
     firstName: "Zeynep",
     lastName: "Şahin",
     email: "zeynep.sahin@example.com",
-    role: "Project Manager"
+    role: "Project Manager",
   },
   {
     id: 5,
     firstName: "Can",
     lastName: "Öztürk",
     email: "can.ozturk@example.com",
-    role: "DevOps Engineer"
+    role: "DevOps Engineer",
   },
   {
     id: 6,
     firstName: "Elif",
     lastName: "Aydın",
     email: "elif.aydin@example.com",
-    role: "QA Engineer"
+    role: "QA Engineer",
   },
   {
     id: 7,
     firstName: "Burak",
     lastName: "Çelik",
     email: "burak.celik@example.com",
-    role: "Full Stack Developer"
+    role: "Full Stack Developer",
   },
   {
     id: 8,
     firstName: "Selin",
     lastName: "Yıldız",
     email: "selin.yildiz@example.com",
-    role: "Product Owner"
-  }
+    role: "Product Owner",
+  },
 ];
 
 const EditProjectModal = ({ closeModal, project }) => {
-  const [companyUsers, setCompanyUsers] = useState(fakeUsers);
+  const [companyUsers, setCompanyUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [projectUsers, setProjectUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [usersToInvite, setUsersToInvite] = useState([]);
 
   // Proje bilgileri
   const [title, setTitle] = useState(project.name);
@@ -88,9 +91,8 @@ const EditProjectModal = ({ closeModal, project }) => {
       try {
         const companyId = Cookies.get("selectedCompanyId");
         const result = await getProjectUsers(companyId, project.id);
-        
-        setProjectUsers(result.result.map(item => item.user));
-        
+
+        setProjectUsers(result.result.map((item) => item.user));
 
         setLoading(false);
       } catch (error) {
@@ -99,6 +101,23 @@ const EditProjectModal = ({ closeModal, project }) => {
       }
     };
 
+    const fetchCompanyUsers = async () => {
+      try {
+        const companyId = Cookies.get("selectedCompanyId");
+
+        const response = await fetchData(companyId);
+        console.log(response);
+        setCompanyUsers(response.result);
+        console.log("ŞİRKET KULLANICILARI ç: ", companyUsers);
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Proje kullanıcıları yüklenirken hata:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchCompanyUsers();
     fetchProjectUsers();
   }, [project.id]);
 
@@ -125,6 +144,20 @@ const EditProjectModal = ({ closeModal, project }) => {
     }
   };
 
+  const handleUserSelect = (user) => {
+    if (
+      !projectUsers.some((pu) => pu.id === user.id) &&
+      !usersToInvite.some((ui) => ui.id === user.id)
+    ) {
+      setUsersToInvite([...usersToInvite, user]);
+    }
+  };
+
+  const handleRemoveUser = (userId) => {
+    setProjectUsers(projectUsers.filter((id) => id !== userId));
+    setUsersToInvite(usersToInvite.filter((user) => user.id !== userId));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -138,7 +171,10 @@ const EditProjectModal = ({ closeModal, project }) => {
       );
       formData.append("endDate", new Date(endDate).toISOString().split("T")[0]);
       formData.append("companyId", Cookies.get("selectedCompanyId"));
-      formData.append("users", JSON.stringify(projectUsers));
+      formData.append(
+        "users",
+        JSON.stringify([...projectUsers, ...usersToInvite])
+      );
 
       if (photo) {
         formData.append("photo", photo);
@@ -151,7 +187,7 @@ const EditProjectModal = ({ closeModal, project }) => {
         new Date(startDate).toISOString().split("T")[0],
         new Date(endDate).toISOString().split("T")[0],
         Cookies.get("selectedCompanyId"),
-        projectUsers
+        [...projectUsers, ...usersToInvite]
       );
 
       console.log(response);
@@ -181,17 +217,11 @@ const EditProjectModal = ({ closeModal, project }) => {
     }
   };
 
-  const handleRemoveUser = (userId) => {
-    setProjectUsers(projectUsers.filter((id) => id !== userId));
-  };
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-lg w-[1200px] max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
-            Projeyi Düzenle
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-800">Projeyi Düzenle</h2>
           <button
             onClick={closeModal}
             className="text-gray-500 hover:text-gray-700"
@@ -200,7 +230,7 @@ const EditProjectModal = ({ closeModal, project }) => {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-8">
+        <div className="grid grid-cols-3 gap-8">
           {/* Sol Taraf - Proje Bilgileri */}
           <div className="space-y-6">
             <div>
@@ -291,15 +321,15 @@ const EditProjectModal = ({ closeModal, project }) => {
           {/* Sağ Taraf - Kullanıcı Yönetimi */}
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold mb-4">Proje Üyeleri</h3>
-              
+              <h3 className="text-lg font-semibold mb-4">Şirket Üyeleri</h3>
+
               {/* Kullanıcı Arama */}
-              <div className="mb-4">
+              <div className="">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-300 p-2 text-sm text-primary text-opacity-70  rounded-lg  focus:border-transparent focus:outline-none focus:ring-1 focus:ring-gray-400"
                   placeholder="Kullanıcı ara..."
                 />
               </div>
@@ -312,9 +342,22 @@ const EditProjectModal = ({ closeModal, project }) => {
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                        {user.firstName.charAt(0)}
-                      </div>
+                      {user.photo && false ? (
+                        <img
+                          src={user.photo}
+                          alt={`${user.firstName} ${user.lastName}`}
+                          className="w-10 h-10 rounded-full"
+                        />
+                      ) : (
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold ${getRandomColor(
+                            user.id
+                          )}`}
+                          title={`${user.firstName} ${user.lastName}`}
+                        >
+                          {getInitials(user.firstName, user.lastName)}
+                        </div>
+                      )}
                       <div>
                         <p className="font-medium">
                           {user.firstName} {user.lastName}
@@ -324,72 +367,88 @@ const EditProjectModal = ({ closeModal, project }) => {
                       </div>
                     </div>
                     <button
-                      onClick={() => {
-                        if (!projectUsers.includes(user.id)) {
-                          setProjectUsers([...projectUsers, user.id]);
-                        }
-                      }}
+                      onClick={() => handleUserSelect(user)}
                       className={`p-2 rounded-full ${
-                        projectUsers.includes(user.id)
+                        projectUsers.includes(user.id) ||
+                        usersToInvite.some((ui) => ui.id === user.id)
                           ? "bg-green-100 text-green-600"
                           : "bg-blue-100 text-blue-600 hover:bg-blue-200"
                       }`}
-                      disabled={projectUsers.includes(user.id)}
+                      disabled={
+                        projectUsers.includes(user.id) ||
+                        usersToInvite.some((ui) => ui.id === user.id)
+                      }
                     >
                       <FaUserPlus />
                     </button>
                   </div>
                 ))}
               </div>
-
-              {/* Davet Etme */}
-              <div className="mt-6">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">
-                  E-posta ile Davet Et
-                </h4>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="flex-1 border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="E-posta adresi girin"
-                  />
-                  <button
-                    onClick={handleInviteUser}
-                    className="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
-                  >
-                    <FaEnvelope />
-                    Davet Et
-                  </button>
-                </div>
+            </div>
+          </div>
+          <div>
+            {/* Davet Etme */}
+            <div className="">
+              <h4 className="font-semibold text-lg  text-gray-700">
+                Proje Üyeleri
+              </h4>
+              <div className="flex">
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="w-full flex-1 border border-gray-300 p-2 text-sm text-primary text-opacity-70  rounded-lg  focus:border-transparent focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  placeholder="E-posta adresi girin"
+                />
+                <button
+                  onClick={handleInviteUser}
+                  className="px-4 py-3 bg-colorFirst border border-borderColor text-primary rounded-md hover:bg-borderColor hover:bg-opacity-25 flex items-center gap-2"
+                >
+                  <FaEnvelope />
+                  Davet Et
+                </button>
               </div>
+            </div>
 
-              {/* Proje Üyeleri */}
-              <div className="mt-6">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">
-                  Proje Üyeleri
-                </h4>
-                <div className="space-y-2">
-                  {loading ? (
-                    <div className="flex justify-center py-4">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                    </div>
-                  ) : projectUsers.length > 0 ? (
-                    projectUsers.map((user) => (
+            {/* Proje Üyeleri */}
+            <div className="">
+              
+              <div className="space-y-2">
+                {loading ? (
+                  <div className="flex justify-center py-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                  </div>
+                ) : projectUsers.length > 0 || usersToInvite.length > 0 ? (
+                  <>
+                    {projectUsers.map((user) => (
                       <div
                         key={user.id}
                         className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                            {user.firstName.charAt(0)}
-                          </div>
+                          {user.photo && false ? (
+                            <img
+                              src={user.photo}
+                              alt={`${user.firstName} ${user.lastName}`}
+                              className="w-10 h-10 rounded-full"
+                            />
+                          ) : (
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold ${getRandomColor(
+                                user.id
+                              )}`}
+                              title={`${user.firstName} ${user.lastName}`}
+                            >
+                              {getInitials(user.firstName, user.lastName)}
+                            </div>
+                          )}
                           <div>
                             <p className="font-medium">
                               {user.firstName} {user.lastName}
                             </p>
-                            <p className="text-sm text-gray-500">{user.email}</p>
+                            <p className="text-sm text-gray-500">
+                              {user.email}
+                            </p>
                             <p className="text-xs text-gray-400">{user.role}</p>
                           </div>
                         </div>
@@ -400,13 +459,56 @@ const EditProjectModal = ({ closeModal, project }) => {
                           <FaTimes />
                         </button>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-center text-gray-500 py-4">
-                      Henüz proje üyesi bulunmuyor.
-                    </p>
-                  )}
-                </div>
+                    ))}
+                    {usersToInvite.map((user) => (
+                      <div
+                        key={user.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          {user.photo && false ? (
+                            <img
+                              src={user.photo}
+                              alt={`${user.firstName} ${user.lastName}`}
+                              className="w-10 h-10 rounded-full"
+                            />
+                          ) : (
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold ${getRandomColor(
+                                user.id
+                              )}`}
+                              title={`${user.firstName} ${user.lastName}`}
+                            >
+                              {getInitials(user.firstName, user.lastName)}
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-medium">
+                              {user.firstName} {user.lastName}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {user.email}
+                            </p>
+                            <p className="text-xs text-gray-400">{user.role}</p>
+                            <p className="text-xs text-blue-500">
+                              Davet Edilecek
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveUser(user.id)}
+                          className="p-2 text-red-500 hover:text-red-700"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <p className="text-center text-gray-500 py-4">
+                    Henüz proje üyesi bulunmuyor.
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -415,7 +517,7 @@ const EditProjectModal = ({ closeModal, project }) => {
         <div className="flex justify-end mt-8">
           <button
             onClick={handleSubmit}
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
+            className="px-4 py-2 bg-colorFirst text-primary border border-borderColor rounded-md hover:bg-borderColor hover:bg-opacity-25 font-md"
           >
             Kaydet
           </button>
@@ -425,4 +527,4 @@ const EditProjectModal = ({ closeModal, project }) => {
   );
 };
 
-export default EditProjectModal; 
+export default EditProjectModal;

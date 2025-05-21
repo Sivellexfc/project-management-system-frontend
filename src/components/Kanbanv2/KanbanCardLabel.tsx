@@ -8,10 +8,10 @@ interface ColorLabelProps {
 const KanbanCardLabel: React.FC<ColorLabelProps> = ({ text, color }) => {
   return (
     <div
-      className="inline-block px-4 py-0 text-white font-normal text-[12px]"
+      className="inline-block px-2 py-0 text-white font-normal text-[12px]"
       style={{
         backgroundColor: color,  // Dinamik renk ayarlaması
-        borderRadius: '16px',    // Yuvarlak köşeler
+        borderRadius: '4px',    // Yuvarlak köşeler
       }}
     >
       {text}

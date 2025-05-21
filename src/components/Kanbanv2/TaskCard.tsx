@@ -8,10 +8,26 @@ import IssueDetailCard from "./IssueDetailCard";
 import { createPortal } from "react-dom";
 import PRIORITY from "../utils/Priority";
 import LABELS from "../utils/Labels";
+import Cookies from "js-cookie";
+import axios from "axios";
+import { getIssue } from "../../services/issueServices/GetIssue";
+import { getUsersByIssue } from "../../services/issueServices/GetUsersByIssue";
+import { getInitials } from "../utils/GetInitials";
+import { getRandomColor } from "../utils/GetRandomColor";
+import { GoComment } from "react-icons/go";
+import PriorityLabel from "./PriorityLabel";
 
 interface Props {
   task: Task;
 }
+
+type User = {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  roleName: string;
+  assignedById: number;
+};
 
 const PRIORITY_COLORS = {
   0: "text-gray-500", // Çok Düşük
@@ -30,10 +46,38 @@ const LABEL_INFO = {
 
 function TaskCard({ task }: Props) {
   const [showDetail, setShowDetail] = useState(false);
-  console.log("task : ", task);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
   useEffect(() => {
+    const fetchTask = async () => {
+      try {
+        // API çağrısı şu an için yorum satırında
+        const companyId = Cookies.get("selectedCompanyId");
+        const response = await getIssue(task.projectId, task.id);
+      } catch (err) {
+        console.error("Error fetching task:", err);
+      } finally {
+      }
+    };
+
+    const fetchAssignUsers = async () => {
+      setLoadingUsers(true); // Loading başlasın
+      try {
+        const response = await getUsersByIssue(task.id);
+        const userInfos = Object.values(response.result || {}).flat();
+        setUsers(userInfos as User[]);
+      } catch (err) {
+        console.error("Error fetching task:", err);
+      } finally {
+        setLoadingUsers(false); // Loading bitsin
+      }
+    };
+
+    fetchTask();
+    fetchAssignUsers();
     setShowDetail(false);
-  }, [task]); // Task değiştikçe detay kapanacak
+  }, [task]);
 
   const {
     setNodeRef,
@@ -54,27 +98,20 @@ function TaskCard({ task }: Props) {
     transition,
     transform: CSS.Transform.toString(transform),
   };
-  console.log("task.labelId : ", task.labelId);
   return (
     <div
       ref={setNodeRef}
       style={{
         ...style,
-        borderLeft: `6px solid ${PRIORITY[task.priorityId]?.color || "#ccc"}`,
+        
       }}
       {...(showDetail ? {} : attributes)}
       {...(showDetail ? {} : listeners)}
       className="w-full px-4 py-2 space-y-2 bg-colorFirst border-t border-r border-b border-borderColor rounded-md hover:shadow-md cursor-grab"
     >
-      <div className="flex justify-between items-center gap-1">
+      <div className="flex justify-between items-center">
         <div className="flex flex-raw gap-1 items-center justify-center">
           <h2 className="font-primary text-lg font-normal">{task.name}</h2>
-          
-            <KanbanCardLabel
-              color={LABELS.find((l) => l.id === task.labelId)?.color}
-              text={LABELS.find((l) => l.id === task.labelId)?.name}
-            ></KanbanCardLabel>
-          
         </div>
         <button
           onPointerDown={(e) => e.stopPropagation()} // Sürükleme olaylarını engelle
@@ -88,10 +125,53 @@ function TaskCard({ task }: Props) {
           <FaInfoCircle size={20} className="opacity-40" />
         </button>
       </div>
+      <PriorityLabel priorityId={Number(task.priorityId)} />
+
+      <KanbanCardLabel
+        color={LABELS.find((l) => l.id === task.labelId)?.color}
+        text={LABELS.find((l) => l.id === task.labelId)?.name}
+      ></KanbanCardLabel>
       <div className="space-y-2">
         <p className="font-primary text-sm font-light">{task.explanation}</p>
       </div>
-      <div></div>
+      <div className="flex flex-raw justify-between items-center">
+      {loadingUsers ? (
+  <p className="text-sm text-gray-400 italic animate-pulse">
+    Kullanıcılar yükleniyor...
+  </p>
+) : users.length > 0 ? (
+  <div className="w-min flex flex-row gap-2 bg-gray-100 bg-opacity-50 p-2 rounded">
+    {users.map((user) => (
+      <div
+        key={user.userId}
+        className="flex items-center"
+        title={`${user.firstName} ${user.lastName}`}
+      >
+        {false ? (
+          <img
+            alt={`${user.firstName} ${user.lastName}`}
+            className="w-6 h-6 rounded-full"
+          />
+        ) : (
+          <div
+            className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-semibold ${getRandomColor(
+              user.userId
+            )}`}
+          >
+            {getInitials(user.firstName, user.lastName)}
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+) : (
+  <p className="text-sm text-gray-400 italic">Henüz kullanıcı atanmadı.</p>
+)}
+
+        <div>
+          <GoComment size={20} />
+        </div>
+      </div>
 
       {showDetail &&
         createPortal(

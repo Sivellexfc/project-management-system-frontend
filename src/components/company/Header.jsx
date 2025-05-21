@@ -19,18 +19,7 @@ const Header = ({setSelectedComponent}) => {
           >
             Projeler
           </button>
-          <button
-          onClick={() =>setSelectedComponent("groups")}
-            className="hover:text-black"
-          >
-            Gruplar
-          </button>
-          <button
-          onClick={() =>setSelectedComponent("subgroups")}
-            className="hover:text-black"
-          >
-            Alt-gruplar
-          </button>
+          
           <button
           onClick={() =>setSelectedComponent("employees")}
             className="hover:text-black"

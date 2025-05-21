@@ -27,6 +27,7 @@ const Anouncement = () => {
       // API çağrısı şu an için yorum satırında
       const companyId = Cookies.get("selectedCompanyId");
 
+      console.log("companyId : ", companyId)
       const response = await axios.get(
         `http://localhost:8085/api/v1/announcements/company/${companyId}`,
         {
@@ -35,7 +36,7 @@ const Anouncement = () => {
           },
         }
       );
-      console.log("response : ", response)
+      console.log("DUYURULAR : ", response.data)
       if (response.data.isSuccess) {
         setAnnouncements(response.data.result);
       } else {

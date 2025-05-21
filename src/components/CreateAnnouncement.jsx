@@ -75,7 +75,7 @@ const CreateAnnouncement = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:8085/api/v1/announcements",
+        `http://localhost:8085/api/v1/announcements`,
         formDataToSend,
         {
           headers: {
