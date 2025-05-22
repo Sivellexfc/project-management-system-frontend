@@ -37,6 +37,7 @@ import Reports from "./pages/Reports.jsx";
 import Todo from "./pages/Todo.jsx";
 import { CalendarContainer } from "react-datepicker";
 import InviteProjectPage from './pages/InviteProjectPage';
+import HelpDetail from "./components/Help/HelpDetail";
 
 const ProtectedRoute = ({ children }) => {
   const accessTokenn = useSelector((state) => state.auth.accessToken);
@@ -94,6 +95,7 @@ const App = () => {
             <Route path="/projectDetails" element={<ProjectDetails />} />
             <Route path="/company" element={<CompanySettings />} />
             <Route path="/help" element={<Help />} />
+            <Route path="/help/:id" element={<HelpDetail />} />
             <Route path="/issues" element={<KanbanBoard />} />
             <Route
               path="/project/kanbanBoard/:projectId"

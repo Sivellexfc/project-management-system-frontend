@@ -16,7 +16,7 @@ const createHelp = async (helpData, photo) => {
     }
 
     const response = await axios.post(
-      "http://localhost:8085/api/v1/helps",
+      "http://localhost:8085/helps",
       formData,
       {
         headers: {

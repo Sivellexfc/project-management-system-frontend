@@ -7,6 +7,8 @@ import {
   FaChartBar,
   FaChartLine,
   FaChartPie,
+  FaBuilding,
+  FaUser,
 } from "react-icons/fa";
 import {
   BarChart,
@@ -75,39 +77,24 @@ const MOCK_TASK_STATS = [
   { date: "2024-03", total: 18, completed: 12 },
   { date: "2024-04", total: 20, completed: 15 },
 ];
-
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#A28CFE",
+  "#F95C79",
+  "#50D2C2",
+  "#FF6384",
+];
 
 const Reports = () => {
-  const [dateRange, setDateRange] = useState({
-    start: "2024-01-01",
-    end: "2024-12-31",
-  });
-
-  const projectStatusData = [
-    {
-      name: "Aktif Projeler",
-      value: MOCK_PROJECTS.filter((p) => p.status === "ACTIVE").length,
-    },
-    {
-      name: "Tamamlanan Projeler",
-      value: MOCK_PROJECTS.filter((p) => p.status === "COMPLETED").length,
-    },
-  ];
-
-  const taskStatusData = [
-    {
-      name: "Tamamlanan",
-      value: MOCK_PROJECTS.reduce((acc, curr) => acc + curr.completedTasks, 0),
-    },
-    {
-      name: "Devam Eden",
-      value: MOCK_PROJECTS.reduce(
-        (acc, curr) => acc + (curr.totalTasks - curr.completedTasks),
-        0
-      ),
-    },
-  ];
+  const [projectData, setProjectData] = useState([]);
+  const [companyCount, setCompanyCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [projectsToShow, setProjectsToShow] = useState([]);
+  const [userCount, setUserCount] = useState(0);
+  const [userPerformances, setUserPerformances] = useState([]);
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -122,36 +109,59 @@ const Reports = () => {
         const userRole = decodedToken.userRole;
         const userId = decodedToken.userId;
 
-        if (userRole === "COMPANY_OWNER") {
-          // Company Owner için raporlar
-          
-          // Örnek olarak ilk şirket için diğer raporları çekelim
-            const companyId = Cookies.get("selectedCompanyId");
-            const projectCount =
-              await OwnerReportsServices.getProjectCountByCompanyId(companyId); // Örnek companyId
-            console.log("Şirketin Proje Sayısı:", projectCount.result.projectCount);
+        if (userRole === "COMPANY_OWNER" || "PROJECT_MANAGER") {
+          const companyId = Cookies.get("selectedCompanyId");
+          const projectCount =
+            await OwnerReportsServices.getProjectCountByCompanyId(companyId);
+          console.log(
+            "Şirketin Proje Sayısı:",
+            projectCount.result.projectCount
+          );
 
-            const companies = await myCompanies();
-            console.log("myCompanies:", companies.result);
+          const companies = await myCompanies();
+          console.log("myCompanies:", companies.result);
+          setCompanyCount(companies.result.length);
+          const projects = await fetchData(companyId);
+          setProjectsToShow(projects.result);
 
-            //Burada projenin detaylarını dönüyor,
-            // buradan sadece projenin adını çekeceğiz.
-            // Ve bir alttaki veriyle iligli projeleri birleştireceğiz..
-            const projects = await fetchData(companyId); // Örnek companyId
-            console.log("projects:", projects.result); //burası bir array dönüyor.
-            
-            const userCount =
-              await OwnerReportsServices.getUserCountByCompanyId(companyId); // Örnek companyId
-            console.log("Kullanıcı Sayısı:", userCount.result.companyUserCount);
+          const userCount = await OwnerReportsServices.getUserCountByCompanyId(
+            companyId
+          );
+          setUserCount(userCount.result.companyUserCount);
+          console.log("Kullanıcı Sayısı:", userCount.result.companyUserCount);
 
-            const projectIds = projects.result.map((project) => project.id);
-            const issueCounts = await Promise.all(
-              projectIds.map((pid) =>
-                OwnerReportsServices.getIssueCountByStage(companyId, pid)
-              )
-            );
-            console.log("Aşamalara Göre Görev Sayısı:", issueCounts);
-          
+          const projectIds = projects.result.map((project) => project.id);
+          console.log("projectIds : ", projectIds);
+
+          const issueCounts = await Promise.all(
+            projectIds.map((pid) =>
+              OwnerReportsServices.getIssueCountByStage(companyId, pid)
+            )
+          );
+          console.log("Aşamalara Göre Görev Sayısı:", issueCounts);
+
+          // Her proje için verileri düzenle
+          const formattedData = issueCounts.map((projectData, index) => {
+            // result içindeki verileri array'e çevir
+            const stageData = Object.values(projectData.result || {});
+
+            return {
+              projectId: projectIds[index],
+              data: stageData.map((item) => ({
+                name: item.stageName || "Belirtilmemiş",
+                value: item.issueCount || 0,
+              })),
+            };
+          });
+
+          console.log("Formatlanmış Veri:", formattedData);
+          setProjectData(formattedData);
+
+          // Kullanıcı performans verilerini çek
+          const performances =
+            await OwnerReportsServices.getAllUsersPerformances();
+            console.log("performances : ",performances);
+          setUserPerformances(performances.result);
         } else if (userRole === "ROLE") {
           // Project Manager için raporlar
           const projectCount =
@@ -175,51 +185,50 @@ const Reports = () => {
         }
       } catch (error) {
         console.error("Raporlar alınırken hata oluştu:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchReports();
   }, []);
 
+  if (loading) {
+    return <div>Yükleniyor...</div>;
+  }
+
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-6 space-y-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Raporlar</h1>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <FaCalendarAlt className="text-gray-500" />
-            <input
-              type="date"
-              value={dateRange.start}
-              onChange={(e) =>
-                setDateRange({ ...dateRange, start: e.target.value })
-              }
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <span>-</span>
-            <input
-              type="date"
-              value={dateRange.end}
-              onChange={(e) =>
-                setDateRange({ ...dateRange, end: e.target.value })
-              }
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
       </div>
 
       {/* Özet Kartları */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+      <div className="bg-colorFirst border border-borderColor rounded-lg p-6">
+          <div className="flex items-center gap-4">
+            <div className="bg-borderColor p-3 rounded-full">
+              <FaBuilding className="text-blue-500 text-xl" />
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm">Şirket Sayısı</p>
+              <p className="text-2xl font-bold text-gray-800">
+                {companyCount}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-colorFirst border border-borderColor rounded-lg p-6">
           <div className="flex items-center gap-4">
-            <div className="bg-blue-100 p-3 rounded-full">
-              <FaProjectDiagram className="text-blue-500 text-xl" />
+            <div className="bg-sky-100 p-3 rounded-full">
+              <FaProjectDiagram className="text-sky-400 text-xl" />
             </div>
             <div>
               <p className="text-gray-500 text-sm">Aktif Projeler</p>
               <p className="text-2xl font-bold text-gray-800">
-                {MOCK_PROJECTS.length}
+                {projectsToShow?.length}
               </p>
             </div>
           </div>
@@ -228,13 +237,11 @@ const Reports = () => {
         <div className="bg-colorFirst border border-borderColor rounded-lg p-6">
           <div className="flex items-center gap-4">
             <div className="bg-green-100 p-3 rounded-full">
-              <FaTasks className="text-green-500 text-xl" />
+              <FaUser className="text-green-500 text-xl" />
             </div>
             <div>
-              <p className="text-gray-500 text-sm">Toplam Görev</p>
-              <p className="text-2xl font-bold text-gray-800">
-                {MOCK_PROJECTS.reduce((acc, curr) => acc + curr.totalTasks, 0)}
-              </p>
+              <p className="text-gray-500 text-sm">Toplam Çalışan</p>
+              <p className="text-2xl font-bold text-gray-800">{userCount}</p>
             </div>
           </div>
         </div>
@@ -244,223 +251,183 @@ const Reports = () => {
               <FaTasks className="text-green-500 text-xl" />
             </div>
             <div>
-              <p className="text-gray-500 text-sm">Tamamlanan Görevler</p>
+              <p className="text-gray-500 text-sm">Toplam Görev Sayısı</p>
               <p className="text-2xl font-bold text-gray-800">
-                {MOCK_PROJECTS.reduce((acc, curr) => acc + curr.completedTasks, 0)}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-colorFirst border border-borderColor rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-yellow-100 p-3 rounded-full">
-              <FaChartBar className="text-yellow-500 text-xl" />
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Tamamlanma Oranı</p>
-              <p className="text-2xl font-bold text-gray-800">
-                {Math.round(
-                  (MOCK_PROJECTS.reduce(
-                    (acc, curr) => acc + curr.completedTasks,
-                    0
-                  ) /
-                    MOCK_PROJECTS.reduce(
-                      (acc, curr) => acc + curr.totalTasks,
-                      0
-                    )) *
-                    100
+                {projectData?.length > 0 && (
+                  <p className="text-xl font-bold text-gray-800">
+                    {projectData.reduce((total, project) => {
+                      return (
+                        total +
+                        project.data.reduce((sum, item) => sum + item.value, 0)
+                      );
+                    }, 0)}
+                  </p>
                 )}
-                %
               </p>
             </div>
           </div>
         </div>
-
-        <div className="bg-colorFirst border border-borderColor rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-yellow-100 p-3 rounded-full">
-              <FaChartBar className="text-yellow-500 text-xl" />
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Tamamlanma Oranı</p>
-              <p className="text-2xl font-bold text-gray-800">
-                {Math.round(
-                  (MOCK_PROJECTS.reduce(
-                    (acc, curr) => acc + curr.completedTasks,
-                    0
-                  ) /
-                    MOCK_PROJECTS.reduce(
-                      (acc, curr) => acc + curr.totalTasks,
-                      0
-                    )) *
-                    100
-                )}
-                %
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-colorFirst border border-borderColor rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-purple-100 p-3 rounded-full">
-              <FaUsers className="text-purple-500 text-xl" />
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Toplam Çalışan</p>
-              <p className="text-2xl font-bold text-gray-800">
-                {MOCK_EMPLOYEES.length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-colorFirst border border-borderColor rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-purple-100 p-3 rounded-full">
-              <FaUsers className="text-purple-500 text-xl" />
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Toplam Çalışan</p>
-              <p className="text-2xl font-bold text-gray-800">
-                {MOCK_EMPLOYEES.length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-colorFirst border border-borderColor rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-purple-100 p-3 rounded-full">
-              <FaUsers className="text-purple-500 text-xl" />
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Toplam Çalışan</p>
-              <p className="text-2xl font-bold text-gray-800">
-                {MOCK_EMPLOYEES.length}
-              </p>
-            </div>
-          </div>
-        </div>
+        
       </div>
 
-      {/* Grafikler */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Proje Durumu */}
-        <div className="bg-colorFirst border border-borderColor rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            Proje Durumu
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={projectStatusData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
-                  }
-                >
-                  {projectStatusData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Görev Durumu */}
-        <div className="bg-colorFirst border border-borderColor rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            Görev Durumu
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={taskStatusData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
-                  }
-                >
-                  {taskStatusData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Görev İlerleme Grafiği */}
-      <div className="bg-colorFirst border border-borderColor rounded-lg p-6 mb-8">
+      {/* Kullanıcı Performans Tablosu */}
+      <div className="bg-colorFirst border border-borderColor rounded-lg p-6 my-10">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Görev İlerleme Trendi
+          Kullanıcı Performans Raporu
         </h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={MOCK_TASK_STATS}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="total"
-                stroke="#8884d8"
-                name="Toplam Görev"
-              />
-              <Line
-                type="monotone"
-                dataKey="completed"
-                stroke="#82ca9d"
-                name="Tamamlanan"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white rounded-lg overflow-hidden">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Kullanıcı
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Toplam Görev
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Erken Teslim
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Zamanında Teslim
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Geç Teslim
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Başarı Oranı
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ort. Gün Farkı
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {userPerformances.map((user) => (
+                <tr key={user.userId} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {user.userName}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {user.totalTasks}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-green-600">
+                      {user.earlyDeliveries} ({user.earlyDeliveryRate}%)
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-blue-600">
+                      {user.onTimeDeliveries} ({user.onTimeDeliveryRate}%)
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-red-600">
+                      {user.lateDeliveries} ({user.lateDeliveryRate}%)
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.successRate >= 80
+                            ? "bg-green-100 text-green-800"
+                            : user.successRate >= 60
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {user.successRate}%
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div
+                      className={`text-sm ${
+                        user.averageDayDifference < 0
+                          ? "text-green-600"
+                          : user.averageDayDifference > 0
+                          ? "text-red-600"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      {user.averageDayDifference > 0
+                        ? `+${user.averageDayDifference}`
+                        : user.averageDayDifference}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Çalışan Performansı */}
-      <div className="bg-colorFirst border border-borderColor rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Çalışan Performansı
-        </h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={MOCK_EMPLOYEES}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="activeTasks" fill="#8884d8" name="Aktif Görevler" />
-              <Bar dataKey="totalTasks" fill="#82ca9d" name="Toplam Görevler" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 mb-10 ">
+        {projectData.map((project, index) => {
+          const filteredData = project.data.filter((item) => item.value > 0);
+          const fullData = project.data;
+          return (
+            <div
+              key={project.projectId}
+              className="bg-white p-4 rounded-lg shadow"
+            >
+              <h2 className="text-lg font-semibold mb-4">
+                Proje{" "}
+                {projectsToShow.find((item) => item.id === project.projectId)
+                  ?.name || "Bulunamadı"}
+              </h2>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={filteredData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      // Etiketleri tamamen kaldırmak istersen label prop'unu kaldırabilirsin
+                      // label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {filteredData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4">
+                <div className="grid grid-cols-2 gap-2">
+                  {fullData.map((item, index) => (
+                    <div key={item.name} className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{
+                          backgroundColor: COLORS[index % COLORS.length],
+                        }}
+                      />
+                      <span className="text-sm">
+                        {item.name}: {item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

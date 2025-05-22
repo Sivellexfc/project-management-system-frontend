@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaTimes, FaUpload, FaTag, FaUser, FaCode } from "react-icons/fa";
 import { fetchData } from "../../services/projectServices/GetProjects";
 import Cookies from "js-cookie";
+import createHelp from "../../services/helpServices/CreateHelp";
 
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
 const LANGUAGES = [
@@ -14,6 +15,18 @@ const LANGUAGES = [
   "GO",
   "OTHER",
 ];
+
+const TAGS = [
+  "OTHER",
+  "FRONTEND",
+  "BACKEND",
+  "AI",
+  "DATABASE",
+  "DEVOPS",
+  "SECURITY",
+  "MOBILE",
+];
+
 const STATUSES = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 
 const CreateHelpModal = ({ closeModal, projects }) => {
@@ -24,8 +37,6 @@ const CreateHelpModal = ({ closeModal, projects }) => {
     priority: "MEDIUM",
     helpstatus: "OPEN",
     language: "",
-    screenshotUrls: [],
-    logFileUrls: [],
     codeSnippet: "",
     mentions: [],
     tags: [],
@@ -35,6 +46,7 @@ const CreateHelpModal = ({ closeModal, projects }) => {
   const [newTag, setNewTag] = useState("");
   const [newMention, setNewMention] = useState("");
   const [projectsToShow, setProjectsToShow] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -62,7 +74,6 @@ const CreateHelpModal = ({ closeModal, projects }) => {
         return;
       }
       setPhoto(file);
-      setPhotoPreview(URL.createObjectURL(file));
     }
   };
 
@@ -80,28 +91,26 @@ const CreateHelpModal = ({ closeModal, projects }) => {
     console.log("Uploaded files:", files);
   };
 
-  const handleAddTag = (e) => {
-    e.preventDefault();
-    if (newTag && !formData.tags.includes(newTag)) {
+  const handleTagSelect = (tag) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(prev => prev.filter(t => t !== tag));
       setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, newTag],
+        tags: prev.tags.filter(t => t !== tag)
       }));
-      setNewTag("");
+    } else {
+      setSelectedTags(prev => [...prev, tag]);
+      setFormData((prev) => ({
+        ...prev,
+        tags: [...prev.tags, tag]
+      }));
     }
-  };
-
-  const handleRemoveTag = (tagToRemove) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToRemove),
-    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // API çağrısı yapılacak
-    console.log("Form data:", formData);
+    const response = await createHelp(formData, photo);
+    console.log("response:", response);
     closeModal();
   };
 
@@ -237,26 +246,38 @@ const CreateHelpModal = ({ closeModal, projects }) => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Ekran Görüntüleri
+                  Fotoğraf
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="file"
-                    multiple
                     accept="image/*"
                     onChange={handlePhotoChange}
                     className="hidden"
-                    id="screenshot-upload"
+                    id="photo-upload"
                   />
-                  
                   <label
-                    htmlFor="screenshot-upload"
+                    htmlFor="photo-upload"
                     className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
                   >
                     <FaUpload />
-                    <span>Dosya Seç</span>
+                    <span>{photo ? photo.name : 'Fotoğraf Seç'}</span>
                   </label>
+                  {photo && (
+                    <button
+                      type="button"
+                      onClick={() => setPhoto(null)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <FaTimes />
+                    </button>
+                  )}
                 </div>
+                {photo && (
+                  <div className="mt-2 text-sm text-gray-500">
+                    Seçilen dosya: {photo.name} ({(photo.size / 1024 / 1024).toFixed(2)} MB)
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -299,42 +320,30 @@ const CreateHelpModal = ({ closeModal, projects }) => {
             {/* Etiketler */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaTag className="inline mr-2" />
                 Etiketler
               </label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {formData.tags.map((tag) => (
-                  <span
+              <div className="flex flex-wrap gap-2">
+                {TAGS.map((tag) => (
+                  <button
                     key={tag}
-                    className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm"
+                    type="button"
+                    onClick={() => handleTagSelect(tag)}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
+                      ${selectedTags.includes(tag)
+                        ? 'bg-gray-200 text-gray-700'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
                   >
-                    <FaTag className="text-gray-500" />
                     {tag}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      <FaTimes size={12} />
-                    </button>
-                  </span>
+                  </button>
                 ))}
               </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Yeni etiket ekle"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddTag} // ✅ Submit değil, sadece click event
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                >
-                  Ekle
-                </button>
-              </div>
+              {selectedTags.length > 0 && (
+                <div className="mt-2 text-sm text-gray-500">
+                  Seçilen etiketler: {selectedTags.join(", ")}
+                </div>
+              )}
             </div>
 
             {/* Butonlar */}

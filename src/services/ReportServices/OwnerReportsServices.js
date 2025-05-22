@@ -71,4 +71,21 @@ export const getIssueCountByStage = async (companyId, projectId) => {
     }
 };
 
+export const getAllUsersPerformances = async () => {
+    const token = Cookie.get("accessToken");
+    try {
+        const response = await axios.get(
+            `${BASE_URL}user/performance`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 

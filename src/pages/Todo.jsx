@@ -2,6 +2,7 @@ import React, { useState,useEffect } from "react";
 import { FaCheck, FaUsers, FaCalendarAlt, FaTag, FaProjectDiagram, FaExclamationTriangle } from "react-icons/fa";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { getMyIssues } from "../services/issueServices/GetMyIssues";
 
 // Klon veri
 const MOCK_TASKS = [
@@ -84,6 +85,14 @@ const Todo = () => {
       default: return "text-gray-500";
     }
   };
+
+  useEffect(() => {
+    const fetchIssues = async () => {
+      const response = await getMyIssues();
+    }
+    fetchIssues();
+  }, [])
+  
 
   return (
     <div className="w-full p-6">
