@@ -39,8 +39,8 @@ const MOCK_PROJECTS = [
     status: "ACTIVE",
     startDate: "2024-01-01",
     endDate: "2024-06-30",
-    totalTasks: 50,
-    completedTasks: 30,
+    totalTasks: 5,
+    completedTasks: 3,
   },
   {
     id: 2,
@@ -48,8 +48,8 @@ const MOCK_PROJECTS = [
     status: "COMPLETED",
     startDate: "2023-09-01",
     endDate: "2024-02-28",
-    totalTasks: 40,
-    completedTasks: 40,
+    totalTasks: 4,
+    completedTasks: 4,
   },
   {
     id: 3,
@@ -57,8 +57,8 @@ const MOCK_PROJECTS = [
     status: "ACTIVE",
     startDate: "2024-03-01",
     endDate: "2024-08-31",
-    totalTasks: 35,
-    completedTasks: 15,
+    totalTasks: 3,
+    completedTasks: 1,
   },
 ];
 
@@ -70,10 +70,10 @@ const MOCK_EMPLOYEES = [
 ];
 
 const MOCK_TASK_STATS = [
-  { date: "2024-01", total: 120, completed: 80 },
-  { date: "2024-02", total: 150, completed: 100 },
-  { date: "2024-03", total: 180, completed: 120 },
-  { date: "2024-04", total: 200, completed: 150 },
+  { date: "2024-01", total: 12, completed: 8 },
+  { date: "2024-02", total: 15, completed: 10 },
+  { date: "2024-03", total: 18, completed: 12 },
+  { date: "2024-04", total: 20, completed: 15 },
 ];
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
@@ -246,7 +246,7 @@ const Reports = () => {
             <div>
               <p className="text-gray-500 text-sm">Tamamlanan Görevler</p>
               <p className="text-2xl font-bold text-gray-800">
-                {MOCK_PROJECTS.reduce((acc, curr) => acc + curr.totalTasks, 0)}
+                {MOCK_PROJECTS.reduce((acc, curr) => acc + curr.completedTasks, 0)}
               </p>
             </div>
           </div>

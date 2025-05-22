@@ -4,6 +4,7 @@ module.exports = {
   theme: {
     fontFamily: {
       primary: "Inter",
+      logo: "'Poppins', sans-serif",
     },
     extend: {
       components: {

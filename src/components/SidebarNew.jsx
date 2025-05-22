@@ -332,15 +332,15 @@ const SidebarNew = () => {
           >
             <span className={`${
               !isCollapsed
-                ? "text-2xl font-bold text-sky-600"
+                ? "text-3xl font-bold text-primary font-logo"
                 : "hidden"
-            }`}>WORKDEN</span>
+            }`}>Workden</span>
             <button onClick={toggleSidebar}>
             <RxHamburgerMenu size={24}/>
             </button>
           </div>
 
-          <ul className="flex-1 px-3 mt-10 overflow-y-auto">
+          <ul className="flex-1 px-3 mt-2 overflow-y-auto">
             {filteredMenu.map((item) =>
               item.path === "/projects" ? (
                 sidebarItems.map((subItem) => (
