@@ -18,6 +18,9 @@ import { alignProperty } from "@mui/material/styles/cssUtils";
 import RemoveUser from "./components/RemoveUser";
 import Cookies from "js-cookie";
 import { FaPen } from "react-icons/fa";
+import { getInitials } from "../../utils/GetInitials";
+import { getRandomColor } from "../../utils/GetRandomColor";
+
 
 const columns = [
   { id: "avatar", label: "", minWidth: 0, align: "center" },
@@ -30,6 +33,8 @@ export default function CompanyEmployees() {
   const [datas, setDatas] = React.useState("");
   const [selectedUserId, setSelectedUserId] = React.useState("");
 
+  
+
   useEffect(() => {
     const getData = async () => {
       console.log("başlıyor ,");
@@ -37,7 +42,7 @@ export default function CompanyEmployees() {
         const result = await fetchData(Cookies.get("selectedCompanyId")); // Backend'den veri çekme
 
         console.log(result);
-        console.log("data : ", datas);
+        console.log("data : ", result);
 
         setDatas(result.result);
       } catch (error) {
@@ -119,7 +124,7 @@ export default function CompanyEmployees() {
                           align={column.align}
                           style={
                             column.id === "avatar"
-                              ? { width: 60, padding: "0 8px" }
+                              ? { width: 60, padding: "0 8px",paddingLeft: 20 }
                               : { minWidth: column.minWidth }
                           }
                         >
@@ -143,11 +148,14 @@ export default function CompanyEmployees() {
                               </button>
                             </div>
                           ) : column.id === "avatar" ? (
-                            <img
-                              src={row.avatar}
-                              alt="Avatar"
-                              className="w-10 h-10 rounded-full"
-                            />
+                            <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${getRandomColor(
+                              row.id
+                            )}`}
+                            title={`${row.firstName} ${row.lastName}`}
+                          >
+                            {getInitials(row.firstName, row.lastName)}
+                          </div>
                           ) : column.id === "name" ? (
                             <span className="font-semibold">
                               {row.firstName + " " + row.lastName}

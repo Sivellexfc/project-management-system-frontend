@@ -54,7 +54,7 @@ const Login = () => {
         } catch (error) {
           console.log("User company infos error : ",error);
         }
-        navigate('/dashboard');
+        navigate('/announcement');
       }
     } catch (error) {
       console.error('Giriş hatası:', error);
