@@ -244,12 +244,7 @@ const SidebarNew = () => {
   }, []);
 
   const menuItems = [
-    {
-      name: "Takvim",
-      path: "/calendar",
-      roles: ["USER", "ADMIN", "COMPANY_OWNER"],
-      icon: <FaCalendarAlt />,
-    },
+    
     {
       name: "Yapılacaklar",
       path: "/todo",

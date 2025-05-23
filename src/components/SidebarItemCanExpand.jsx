@@ -38,8 +38,8 @@ const SidebarItemCanExpand = ({
         className={`relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer 
           transition-colors group ${
             active
-              ? "bg-optionHoverColor"
-              : "hover:bg-optionHoverColor text-gray-600"
+              ? "bg-bg-sky-100"
+              : "hover:bg-sky-100 text-primary text-opacity-70"
           } ${isCollapsed ? "justify-center" : ""} ${paddingLeft}`}
       >
         {icon}
@@ -47,7 +47,7 @@ const SidebarItemCanExpand = ({
           <div className="flex flex-row w-full justify-between items-center">
             <span className="ml-2 text-sm font-normal">{text}</span>
             {subItems.length > 0 && (
-              <div className="p-1 rounded-lg  hover:bg-gray-200">
+              <div className="p-1 rounded-lg  hover:bg-sky-200">
                 <MdOutlineKeyboardArrowDown onClick={toggleExpand} />
               </div>
             )}

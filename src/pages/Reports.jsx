@@ -32,6 +32,8 @@ import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import { fetchData } from "../services/projectServices/GetProjects";
 import { myCompanies } from "../services/companyServices/GetMyCompanies";
+import { getUserIssueReport } from "../services/userServices/GetUserIssueReport";
+import { getUserPerformance } from "../services/userServices/GetUserPerformance";
 
 // Klon veri
 const MOCK_PROJECTS = [
@@ -109,7 +111,7 @@ const Reports = () => {
         const userRole = decodedToken.userRole;
         const userId = decodedToken.userId;
 
-        if (userRole === "COMPANY_OWNER" || "PROJECT_MANAGER") {
+        if (userRole === "COMPANY_OWNER" || userRole === "PROJECT_MANAGER") {
           const companyId = Cookies.get("selectedCompanyId");
           const projectCount =
             await OwnerReportsServices.getProjectCountByCompanyId(companyId);
@@ -162,25 +164,18 @@ const Reports = () => {
             await OwnerReportsServices.getAllUsersPerformances();
             console.log("performances : ",performances);
           setUserPerformances(performances.result);
-        } else if (userRole === "ROLE") {
-          // Project Manager için raporlar
-          const projectCount =
-            await ProjectManagerReportsServices.getProjectCountByUserId(userId);
-          console.log("Proje Sayısı:", projectCount);
 
-          // Örnek olarak ilk proje için diğer raporları çekelim
-          if (projectCount > 0) {
-            const issueCount =
-              await ProjectManagerReportsServices.getIssueCountByProjectId(1); // Örnek projectId
-            console.log("Görev Sayısı:", issueCount);
+        } else if (userRole === "USER") {
+          try {
+            // Görev raporunu al
+            const issueReport = await getUserIssueReport();
+            console.log("Görev Raporu:", issueReport);
 
-            const issueCountByStage =
-              await ProjectManagerReportsServices.getIssueCountByStage(1); // Örnek projectId
-            console.log("Aşamalara Göre Görev Sayısı:", issueCountByStage);
-
-            const userCount =
-              await ProjectManagerReportsServices.getUserCountByProjectId(1); // Örnek projectId
-            console.log("Projedeki Kullanıcı Sayısı:", userCount);
+            // Performans raporunu al
+            const performanceReport = await getUserPerformance(userId);
+            console.log("Performans Raporu:", performanceReport);
+          } catch (error) {
+            console.error("Kullanıcı raporları alınırken hata oluştu:", error);
           }
         }
       } catch (error) {

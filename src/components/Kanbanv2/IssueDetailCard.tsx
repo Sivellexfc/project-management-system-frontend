@@ -11,11 +11,19 @@ import {
   FaCheck,
   FaUser,
   FaComment,
+  FaHistory,
+  FaUsers,
+  FaTag,
+  FaEdit,
+  FaUserPlus,
+  FaUserMinus,
+  FaArrowRight,
 } from "react-icons/fa";
 import { MdLowPriority } from "react-icons/md";
 import { IoMdAlert, IoMdClose } from "react-icons/io";
 import { fetchData } from "../../services/projectServices/GetUserByProject";
 import { getUsersByIssue } from "../../services/issueServices/GetUsersByIssue";
+import { getIssueHistory } from "../../services/issueServices/GetIssueHistory";
 import Cookies from "js-cookie";
 import { useParams } from "react-router-dom";
 import { GoCheck, GoPlus } from "react-icons/go";
@@ -26,6 +34,9 @@ import {
   getCommentsByIssueId,
   deleteComment,
 } from "../../services/commentServices/CommentServices";
+import { jwtDecode, JwtPayload } from "jwt-decode";
+import { deleteIssue } from "../../services/issueServices/DeleteIssue";
+import { updateIssueStage } from "../../services/issueServices/UpdateIssueStage";
 
 interface Props {
   task: Task;
@@ -67,6 +78,23 @@ interface Step {
   isDone: boolean;
 }
 
+interface HistoryItem {
+  id: number;
+  issue: {
+    id: number;
+    name: string;
+  };
+  modifiedBy: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    photo: string;
+  };
+  changeDescription: string;
+  modifiedAt: string;
+  expirationDate: string;
+}
+
 const PRIORITY_COLORS = {
   0: "text-gray-500", // Çok Düşük
   1: "text-blue-500", // Düşük
@@ -91,10 +119,13 @@ const ROLES = [
   "QA_ASSIGNE",
 ];
 
-
+interface CustomJwtPayload extends JwtPayload {
+  userRole: string;
+}
 
 const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
   const { projectId } = useParams();
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [steps, setSteps] = useState<Step[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -107,8 +138,18 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
   const [assignedUsersByRole, setAssignedUsersByRole] = useState<{
     [key: string]: any[];
   }>({});
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const companyId = Cookies.get("selectedCompanyId");
 
   useEffect(() => {
+    const token = Cookies.get("accessToken");
+    if (token) {
+      const decoded = jwtDecode<CustomJwtPayload>(token);
+      setCurrentUserRole(decoded.userRole);
+    }
+
     const getData = async () => {
       try {
         const result = await fetchData(
@@ -182,6 +223,21 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
 
     fetchComments();
   }, [task.id, projectId]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await getIssueHistory(task.id);
+        if (response.isSuccess) {
+          setHistory(response.result);
+        }
+      } catch (error) {
+        console.error("Geçmiş verileri alınırken hata oluştu:", error);
+      }
+    };
+
+    fetchHistory();
+  }, [task.id]);
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), "dd MMMM yyyy", { locale: tr });
@@ -282,6 +338,55 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
     }
   }
 
+  const getHistoryIcon = (description: string) => {
+    if (description.includes("Label Updated")) return <FaTag className="text-blue-500" />;
+    if (description.includes("Issue created")) return <FaPlus className="text-green-500" />;
+    if (description.includes("assigned")) return <FaUserPlus className="text-purple-500" />;
+    if (description.includes("unassigned")) return <FaUserMinus className="text-red-500" />;
+    if (description.includes("updated")) return <FaEdit className="text-yellow-500" />;
+    return <FaHistory className="text-gray-500" />;
+  };
+
+  const formatHistoryDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 24) {
+      return `${diffInHours} saat önce`;
+    } else {
+      return format(date, "dd MMMM yyyy HH:mm", { locale: tr });
+    }
+  };
+
+  const handleDeleteIssue = async () => {
+    try {
+      if (!companyId || !projectId) return;
+      
+      const response = await deleteIssue(projectId, task.id);
+      if (response.isSuccess) {
+        setShowDeleteModal(false);
+        onClose();
+      }
+    } catch (error) {
+      console.error("Issue silinirken hata oluştu:", error);
+    }
+  };
+
+  const handleCompleteIssue = async () => {
+    try {
+      if (!companyId || !projectId) return;
+      
+      const response = await updateIssueStage( projectId, task.id, "DONE");
+      if (response.isSuccess) {
+        setShowCompleteModal(false);
+        onClose();
+      }
+    } catch (error) {
+      console.error("Issue tamamlanırken hata oluştu:", error);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-7xl max-h-[90vh] overflow-y-auto">
@@ -297,7 +402,7 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
 
         <div className="grid grid-cols-12 gap-6">
           {/* Sol Kolon - Üst: Detay Bilgileri */}
-          <div className="col-span-8 space-y-6 ">
+          <div className="col-span-8 space-y-6">
             <div className="space-y-4">
               {/* Öncelik ve Etiket */}
               <div className="flex items-center gap-4">
@@ -353,50 +458,80 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
                 </p>
               </div>
 
-              {/* Adımlar */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Adımlar
-                </h3>
-                <div className="relative pl-6">
-                  <div className="absolute left-[32.5px] top-0 bottom-0 w-0.5 bg-gray-200">
-                    {steps.map((step, index) => (
-                      <div
-                        key={step.id}
-                        className={`absolute left-0 w-0.5 ${
-                          step.isDone ? "bg-green-500" : "bg-gray-100"
-                        }`}
-                        style={{
-                          top: `${(index * 100) / steps.length}%`,
-                          height: `${100 / steps.length}%`,
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div className="space-y-4">
-                    {steps.map((step, index) => (
-                      <div
-                        key={step.id}
-                        className="flex items-center gap-4 relative"
-                      >
+              {/* Adımlar ve Geçmiş */}
+              <div className="grid grid-cols-2 gap-6">
+                {/* Sol Taraf - Adımlar */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Adımlar
+                  </h3>
+                  <div className="relative pl-6">
+                    <div className="absolute left-[32.5px] top-0 bottom-0 w-0.5 bg-gray-200">
+                      {steps.map((step, index) => (
                         <div
-                          className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                            step.isDone
-                              ? "bg-green-500 text-white"
-                              : "bg-gray-100"
+                          key={step.id}
+                          className={`absolute left-0 w-0.5 ${
+                            step.isDone ? "bg-green-500" : "bg-gray-100"
                           }`}
+                          style={{
+                            top: `${(index * 100) / steps.length}%`,
+                            height: `${100 / steps.length}%`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div className="space-y-4">
+                      {steps.map((step, index) => (
+                        <div
+                          key={step.id}
+                          className="flex items-center gap-4 relative"
                         >
-                          {step.isDone && <FaCheck size={10} />}
+                          <div
+                            className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                              step.isDone
+                                ? "bg-green-500 text-white"
+                                : "bg-gray-100"
+                            }`}
+                          >
+                            {step.isDone && <FaCheck size={10} />}
+                          </div>
+                          <span
+                            className={`flex-1 ${
+                              step.isDone
+                                ? "line-through text-primary text-sm opacity-60"
+                                : "text-primary text-sm opacity-70"
+                            }`}
+                          >
+                            {step.description}
+                          </span>
                         </div>
-                        <span
-                          className={`flex-1 ${
-                            step.isDone
-                              ? "line-through text-primary text-sm opacity-60"
-                              : "text-primary text-sm opacity-70"
-                          }`}
-                        >
-                          {step.description}
-                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sağ Taraf - Geçmiş */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Geçmiş
+                  </h3>
+                  <div className="space-y-3">
+                    {history.map((item) => (
+                      <div key={item.id} className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg">
+                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                          {getHistoryIcon(item.changeDescription)}
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-700">
+                            {item.changeDescription}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {item.modifiedBy.firstName} {item.modifiedBy.lastName} tarafından
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {formatHistoryDate(item.modifiedAt)}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -404,7 +539,7 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
               </div>
             </div>
 
-            {/* Sol Kolon - Alt: Yorumlar */}
+            {/* Yorumlar */}
             <div className="mt-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Yorumlar
@@ -484,120 +619,127 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
 
           {/* Sağ Kolon: Kullanıcı Atamaları */}
           <div className="col-span-4 h-full">
-            <div className="h-1/2 border border-borderColor rounded-sm p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Kullanıcı Ata
-              </h3>
-              <div className="relative" ref={dropdownRef}>
-                <div className="flex gap-2 mb-4">
-                  <div className="relative flex-1">
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Kullanıcı ara..."
-                      className="w-full pl-10 pr-4 py-2 border border-borderColor rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        setIsUserDropdownOpen(true);
-                      }}
-                      onFocus={() => setIsUserDropdownOpen(true)}
-                    />
-                  </div>
-                  <button
-                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                    className="px-4 py-2 bg-colorFirst border border-borderColor hover:bg-borderColor text-primary rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    <GoPlus />
-                  </button>
-                  <button
-                    onClick={() => handleAssignUsers()}
-                    className="border border-[#A6F268] hover:bg-[#9dee5b] hover:border-[#9dee5b] rounded-lg px-4 py-2 bg-[#A6F268] text-white"
-                  >
-                    <GoCheck />
-                  </button>
-                </div>
-
-                {isUserDropdownOpen && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                    {filteredUsers.length > 0 ? (
-                      filteredUsers.map((user) => (
-                        <div
-                          key={user.id}
-                          className="flex items-center justify-between p-2 hover:bg-gray-50 cursor-pointer"
-                          onClick={() => handleUserSelect(user)}
-                        >
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${getRandomColor(
-                                user.id
-                              )}`}
-                              title={`${user.firstName} ${user.lastName}`}
-                            >
-                              {getInitials(user.firstName, user.lastName)}
-                            </div>
-                            <span className="text-gray-700">
-                              {user.firstName + " " + user.lastName}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-4 text-gray-500">
-                        Kullanıcı bulunamadı
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  {assignedUsers.map((user) => (
-                    <div
-                      key={user.id}
-                      className="flex items-center justify-between py-2 rounded-lg"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${getRandomColor(
-                            user.id
-                          )}`}
-                          title={`${user.firstName} ${user.lastName}`}
-                        >
-                          {getInitials(user.firstName, user.lastName)}
-                        </div>
-                        <span className="text-gray-700 whitespace-nowrap">
-                          {user.firstName + " " + user.lastName}
-                        </span>
-                        <select
-                          value={user.role}
-                          onChange={(e) =>
-                            handleRoleChange(user.id, e.target.value)
-                          }
-                          className="text-sm text-gray-500 border border-gray-300 rounded px-2 py-1"
-                        >
-                          {ROLES.map((role) => (
-                            <option key={role} value={role}>
-                              {role}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <button
-                        onClick={() => handleRemoveUser(user.id)}
-                        className="text-gray-300 hover:text-primary px-2"
-                      >
-                        <IoMdClose size={14} />
-                      </button>
+            {(currentUserRole === "COMPANY_OWNER" ||
+              currentUserRole === "PROJECT_MANAGER") && (
+              <div className="h-1/2 border border-borderColor rounded-sm p-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Kullanıcı Ata
+                </h3>
+                <div className="relative" ref={dropdownRef}>
+                  <div className="flex gap-2 mb-4">
+                    <div className="relative flex-1">
+                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Kullanıcı ara..."
+                        className="w-full pl-10 pr-4 py-2 border border-borderColor rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setIsUserDropdownOpen(true);
+                        }}
+                        onFocus={() => setIsUserDropdownOpen(true)}
+                      />
                     </div>
-                  ))}
+                    <button
+                      onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                      className="px-4 py-2 bg-colorFirst border border-borderColor hover:bg-borderColor text-primary rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      <GoPlus />
+                    </button>
+                    <button
+                      onClick={() => handleAssignUsers()}
+                      className="border border-[#A6F268] hover:bg-[#9dee5b] hover:border-[#9dee5b] rounded-lg px-4 py-2 bg-[#A6F268] text-white"
+                    >
+                      <GoCheck />
+                    </button>
+                  </div>
+  
+                  {isUserDropdownOpen && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {filteredUsers.length > 0 ? (
+                        filteredUsers.map((user) => (
+                          <div
+                            key={user.id}
+                            className="flex items-center justify-between p-2 hover:bg-gray-50 cursor-pointer"
+                            onClick={() => handleUserSelect(user)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${getRandomColor(
+                                  user.id
+                                )}`}
+                                title={`${user.firstName} ${user.lastName}`}
+                              >
+                                {getInitials(user.firstName, user.lastName)}
+                              </div>
+                              <span className="text-gray-700">
+                                {user.firstName + " " + user.lastName}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          Kullanıcı bulunamadı
+                        </div>
+                      )}
+                    </div>
+                  )}
+  
+                  <div className="space-y-2">
+                    {assignedUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        className="flex items-center justify-between py-2 rounded-lg"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${getRandomColor(
+                              user.id
+                            )}`}
+                            title={`${user.firstName} ${user.lastName}`}
+                          >
+                            {getInitials(user.firstName, user.lastName)}
+                          </div>
+                          <span className="text-gray-700 whitespace-nowrap">
+                            {user.firstName + " " + user.lastName}
+                          </span>
+                          <select
+                            value={user.role}
+                            onChange={(e) =>
+                              handleRoleChange(user.id, e.target.value)
+                            }
+                            className="text-sm text-gray-500 border border-gray-300 rounded px-2 py-1"
+                          >
+                            {ROLES.map((role) => (
+                              <option key={role} value={role}>
+                                {role}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+  
+                        <button
+                          onClick={() => handleRemoveUser(user.id)}
+                          className="text-gray-300 hover:text-primary px-2"
+                        >
+                          <IoMdClose size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+            
             <div className="h-1/2 border border-borderColor rounded-sm p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Atanan Kullanıcılar
-              </h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Atanan Kullanıcılar
+                </h3>
+                
+              </div>
               <div className="overflow-y-auto max-h-[calc(100%-3rem)]">
                 {Object.entries(assignedUsersByRole).map(([role, users]) => (
                   <div key={role} className="space-y-2 mb-4">
@@ -630,9 +772,84 @@ const IssueDetailCard: React.FC<Props> = ({ task, onClose }) => {
                 ))}
               </div>
             </div>
+            {(currentUserRole === "COMPANY_OWNER" ||
+                  currentUserRole === "PROJECT_MANAGER") && (
+                  <div className="flex gap-2 py-5 align-right">
+                    <button
+                      onClick={() => setShowDeleteModal(true)}
+                      className="px-3 py-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 flex items-center text-sm"
+                    >
+                      <FaTrash className="mr-1.5" />
+                      Sil
+                    </button>
+                    <button
+                      onClick={() => setShowCompleteModal(true)}
+                      className="px-3 py-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 flex items-center text-sm"
+                    >
+                      <FaCheck className="mr-1.5" />
+                      Tamamla
+                    </button>
+                  </div>
+                )}
           </div>
         </div>
       </div>
+
+      {/* Silme Onay Modalı */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Görevi Sil
+            </h3>
+            <p className="text-gray-600 mb-6">
+              "{task.name}" görevini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleDeleteIssue}
+                className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
+              >
+                Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tamamlama Onay Modalı */}
+      {showCompleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Görevi Tamamla
+            </h3>
+            <p className="text-gray-600 mb-6">
+              "{task.name}" görevini tamamlamak istediğinize emin misiniz?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCompleteModal(false)}
+                className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleCompleteIssue}
+                className="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
+              >
+                Tamamla
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

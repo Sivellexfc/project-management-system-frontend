@@ -28,8 +28,8 @@ const SidebarItem = ({ icon, text, active, isCollapsed, subItems,link = [] }) =>
         className={`relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer 
           transition-colors group ${
             activeItem == link
-              ? "bg-optionHoverColor"
-              : "hover:bg-optionHoverColor text-gray-600"
+              ? "bg-sky-100"
+              : "hover:bg-sky-100 text-primary text-opacity-70"
           } ${isCollapsed ? "justify-center" : ""}`}>
           {icon}
           {!isCollapsed && (
